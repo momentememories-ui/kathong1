@@ -46,7 +46,7 @@
             pointer-events: none;
         }
 
-        /* ท้องฟ้าด้านบน 25% (โคมลอย + พลุ) */
+        /* ท้องฟ้าด้านบน 25% */
         .sky-container {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 25%;
@@ -115,7 +115,44 @@
             100% { transform: translate(var(--end-x), var(--end-y)) scale(1.1); opacity: 0; }
         }
 
-        /* กระทงหลัก */
+        /* กระทงที่ถูกลอยแล้ว (เก็บบันทึกไว้บนผิวน้ำ สามารถกดดูความทรงจำ หรือกดค้างเพื่อลบได้) */
+        .saved-krathong-item {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            z-index: 15;
+            transition: transform 0.3s;
+            animation: mainFloat 3.5s ease-in-out infinite alternate;
+        }
+
+        .saved-krathong-item img {
+            width: 150px; height: 120px; object-fit: contain;
+            filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.6));
+        }
+
+        .saved-krathong-item .tag-label {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ff69b4; color: #d81b60;
+            padding: 2px 12px; border-radius: 12px;
+            font-size: 11px; font-weight: bold; margin-top: -5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* ปุ่มกากบาทสำหรับลบ (แสดงเมื่อกดค้าง) */
+        .delete-krathong-btn {
+            position: absolute;
+            top: -10px; right: 20px;
+            background: #ff3b30; color: #fff;
+            border: 2px solid #fff; width: 26px; height: 26px;
+            border-radius: 50%; font-size: 14px; font-weight: bold;
+            display: none; justify-content: center; align-items: center;
+            cursor: pointer; z-index: 25;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+        }
+
+        /* กระทงหลักระหว่างสร้าง */
         .main-krathong-wrapper {
             position: absolute; 
             bottom: 160px; 
@@ -125,20 +162,13 @@
             flex-direction: column; 
             align-items: center;
             justify-content: center;
-            transition: bottom 1.2s cubic-bezier(0.25, 1, 0.5, 1); 
             z-index: 10; 
-            cursor: pointer;
             width: 170px;
         }
 
-        .main-krathong-wrapper.floating {
-            bottom: 220px;
-            animation: mainFloat 3.5s ease-in-out infinite alternate;
-        }
-
         @keyframes mainFloat {
-            0% { transform: translateX(-50%) translateY(0px) rotate(-1deg); }
-            100% { transform: translateX(-50%) translateY(-10px) rotate(1deg); }
+            0% { transform: translateY(0px) rotate(-1deg); }
+            100% { transform: translateY(-8px) rotate(1deg); }
         }
 
         /* โมเดลธูปเทียนสมจริง */
@@ -227,14 +257,6 @@
             margin: 0 auto; display: block;
         }
 
-        .tag-label {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #ff69b4; color: #d81b60;
-            padding: 3px 14px; border-radius: 12px;
-            font-size: 11px; font-weight: bold; margin-top: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: none;
-        }
-
         /* แท็บล่างสุดสีขาว-ชมพู */
         .bottom-panel {
             position: absolute; bottom: 12px; left: 12px; right: 12px;
@@ -301,7 +323,6 @@
             box-shadow: 0 3px 10px rgba(255, 20, 147, 0.3);
         }
 
-        /* ปุ่มลอยกระทงพร้อมกัน สีขาว */
         .floating-launch-btn {
             position: absolute; bottom: 35px; left: 50%;
             transform: translateX(-50%);
@@ -314,9 +335,9 @@
         }
 
         @keyframes pulseBtn {
-            0% { transform: translateX(-50%) scale(1); }
-            50% { transform: translateX(-50%) scale(1.05); }
-            100% { transform: translateX(-50%) scale(1); }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         /* หน้าจอคำอธิษฐาน */
@@ -358,7 +379,6 @@
             display: flex; justify-content: center; align-items: center; z-index: 2;
         }
 
-        /* การ์ดโพลารอยด์พุ่งออกมากระจายตัว พร้อมแอนิเมชันขยับดุ๊กดิ๊ก (Wiggle & Bounce) ล่อให้กด */
         .polaroid-card {
             position: absolute; background: #ffffff; padding: 8px 8px 14px 8px;
             border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
@@ -392,7 +412,6 @@
             text-align: center; pointer-events: none;
         }
 
-        /* ป๊อปอัปขยายโพลารอยด์เต็มจอ */
         .full-photo-modal {
             position: absolute; inset: 0; 
             background: rgba(5, 10, 20, 0.65);
@@ -428,7 +447,6 @@
             font-size: 16px; cursor: pointer; z-index: 10;
         }
 
-        /* หัวใจและอิโมจิลอยขึ้น ช้ามาก ละมุนตา ไม่มองเห็นก่อนลอย */
         .floating-heart {
             position: absolute;
             bottom: -30px;
@@ -449,27 +467,24 @@
 </head>
 <body>
 
-    <!-- เพลงประกอบ (ไฟล์ song.mp3) -->
     <audio id="bgMusic" src="song.mp3" loop></audio>
 
     <div class="mobile-frame" id="frame">
         <div class="overlay-dark"></div>
 
-        <!-- ท้องฟ้า 25% ด้านบน -->
         <div class="sky-container" id="sky"></div>
 
-        <!-- แม่น้ำ 75% ด้านล่าง -->
         <div class="river-container" id="river">
             <div class="water-wave"></div>
+            <!-- พื้นที่สำหรับวางกระทบที่ถูกบันทึกและลอยอยู่ -->
+            <div id="savedKrathongsContainer" style="position: absolute; inset: 0; pointer-events: auto;"></div>
         </div>
 
-        <!-- ข้อความคำแนะนำ (อยู่นิ่งๆ) -->
         <div class="drag-hint-fixed" id="dragHint" style="display: none;">✨ แตะลากธูปเทียนไปปักลงกระทง</div>
 
-        <!-- กระทงหลัก -->
-        <div class="main-krathong-wrapper" id="mainKrathong" onclick="openMemoryModal()">
+        <!-- กระทงหลักสำหรับสร้างใหม่ -->
+        <div class="main-krathong-wrapper" id="mainKrathong" style="display: flex;">
             <img id="krathongDisplay" class="krathong-img" src="กระทง1.png" alt="กระทง" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3501/3501140.png'">
-            <div class="tag-label" id="tagLabel">me</div>
         </div>
 
         <!-- โมเดลธูปเทียน -->
@@ -487,27 +502,22 @@
             </div>
         </div>
 
-        <!-- ปุ่มลอยกระทงพร้อมกัน สีขาว -->
         <button class="floating-launch-btn" id="launchBtn" onclick="launchKrathong()">ลอยพร้อมกัน ✨</button>
 
-        <!-- แท็บควบคุมล่างสุด (สีขาว-ชมพู) -->
+        <!-- แท็บควบคุมล่างสุด -->
         <div class="bottom-panel" id="bottomPanel">
-            
-            <!-- ขั้นตอนที่ 1: เลือกกระทง -->
             <div id="step1Content">
                 <div class="panel-title">เลือกกระทงสวยๆ 🌸</div>
                 <div class="krathong-selector" id="selector"></div>
                 <button class="btn-primary" onclick="goToStep(2)">ถัดไป: ใส่รูปความทรงจำ (5 รูป) 📸</button>
             </div>
 
-            <!-- ขั้นตอนที่ 2: อัปโหลดรูปความทรงจำ 5 รูป -->
             <div id="step2Content" style="display: none;">
                 <div class="panel-title">อัปโหลดรูปภาพความทรงจำ 5 รูป 💕</div>
                 <div class="photos-input-list" id="photosInputList"></div>
                 <button class="btn-primary" onclick="goToStep(3)">ถัดไป: คำอธิษฐาน ✨</button>
             </div>
 
-            <!-- ขั้นตอนที่ 3: พิมพ์คำอธิษฐาน -->
             <div id="step3Content" style="display: none;">
                 <div class="panel-title">เขียนคำอธิษฐานของเราสองคน 💌</div>
                 <div class="form-group">
@@ -515,15 +525,13 @@
                 </div>
                 <button class="btn-primary" onclick="finishWish()">พิมพ์คำอธิษฐานเสร็จสิ้น 🕯️</button>
             </div>
-
         </div>
 
-        <!-- หน้าจอคำอธิษฐานเมื่อกดกระทง -->
+        <!-- หน้าจอคำอธิษฐาน -->
         <div class="memory-overlay" id="memoryOverlay">
             <button class="close-btn" onclick="closeMemoryModal()">✕</button>
             <div class="memory-title">คำอธิษฐาน ❤️</div>
             <div class="memory-wish-text" id="displayWishText">"ขอให้เรามีความสุข รักกันนานๆ..."</div>
-            
             <div class="polaroid-scatter-container" id="scatterContainer"></div>
         </div>
 
@@ -539,9 +547,11 @@
     </div>
 
     <script>
-        const photoDataList = Array(5).fill(null).map(() => ({ src: '', caption: '' }));
+        let photoDataList = Array(5).fill(null).map(() => ({ src: '', caption: '' }));
+        let allKrathongs = JSON.parse(localStorage.getItem('saved_krathongs')) || [];
+        let activeKrathongData = null; // ข้อมูลกระทงที่กำลังเปิดดูอยู่
 
-        // 1. ท้องฟ้า (โคมลอย + พลุ)
+        // 1. ท้องฟ้า
         const sky = document.getElementById('sky');
         for (let i = 0; i < 10; i++) {
             const lantern = document.createElement('div');
@@ -562,44 +572,91 @@
             sky.appendChild(fw);
         }
 
-        // 2. กระทงเล็กๆ ในแม่น้ำ (เริ่มต้นนอกจอฝั่งซ้าย -60px ไม่ค้างคาหน้าจอ)
+        // 2. กระทงเล็กๆ ลอยฉากหลัง
         const river = document.getElementById('river');
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 5; i++) {
             const bgKrathong = document.createElement('div');
             bgKrathong.className = 'bg-krathong';
             bgKrathong.style.backgroundImage = `url('กระทง${(i % 9) + 1}.png')`;
-            
-            const startX = -60 - (i * 35);
-            const startY = 60 + Math.random() * 280;
-            const endX = startX + 480 + Math.random() * 50;
-            const endY = startY + (Math.random() * 40 - 20);
-
+            const startX = -60 - (i * 40);
+            const startY = 80 + Math.random() * 250;
+            const endX = startX + 480;
+            const endY = startY + (Math.random() * 30 - 15);
             bgKrathong.style.setProperty('--start-x', `${startX}px`);
             bgKrathong.style.setProperty('--start-y', `${startY}px`);
             bgKrathong.style.setProperty('--end-x', `${endX}px`);
             bgKrathong.style.setProperty('--end-y', `${endY}px`);
-            
-            bgKrathong.style.animationDuration = `${11 + Math.random() * 5}s`;
-            bgKrathong.style.animationDelay = `${i * 2.2}s`;
+            bgKrathong.style.animationDuration = `${12 + Math.random() * 4}s`;
+            bgKrathong.style.animationDelay = `${i * 2.5}s`;
             river.appendChild(bgKrathong);
         }
 
-        // 3. รายการเลือกกระทง 9 แบบ
+        // เรนเดอร์กระทงที่เคยลอยและบันทึกไว้ขึ้นมาบนผิวน้ำ
+        renderSavedKrathongs();
+
+        function renderSavedKrathongs() {
+            const container = document.getElementById('savedKrathongsContainer');
+            container.innerHTML = '';
+
+            allKrathongs.forEach((kData) => {
+                const item = document.createElement('div');
+                item.className = 'saved-krathong-item';
+                item.style.left = `${kData.posX}%`;
+                item.style.bottom = `${kData.posY}px`;
+
+                item.innerHTML = `
+                    <button class="delete-krathong-btn" onclick="deleteKrathong(event, '${kData.id}')">✕</button>
+                    <img src="${kData.krathongImg}" alt="กระทง">
+                    <div class="tag-label">${kData.owner || 'me'}</div>
+                `;
+
+                // ระบบรองรับทั้งกดคลิกปกติ และกดค้าง (Long Press) เพื่อลบ
+                let pressTimer;
+                const showDeleteBtn = () => {
+                    const btn = item.querySelector('.delete-krathong-btn');
+                    btn.style.display = 'flex';
+                };
+
+                item.addEventListener('touchstart', () => { pressTimer = setTimeout(showDeleteBtn, 800); });
+                item.addEventListener('touchend', () => clearTimeout(pressTimer));
+                item.addEventListener('mousedown', () => { pressTimer = setTimeout(showDeleteBtn, 800); });
+                item.addEventListener('mouseup', () => clearTimeout(pressTimer));
+
+                // กดเพื่อเปิดดูความทรงจำ
+                item.onclick = (e) => {
+                    if (e.target.classList.contains('delete-krathong-btn')) return;
+                    openSavedMemory(kData);
+                };
+
+                container.appendChild(item);
+            });
+        }
+
+        function deleteKrathong(e, id) {
+            e.stopPropagation();
+            if (confirm("ต้องการลบกระทงความทรงจำนี้ใช่หรือไม่?")) {
+                allKrathongs = allKrathongs.filter(k => k.id !== id);
+                localStorage.setItem('saved_krathongs', JSON.stringify(allKrathongs));
+                renderSavedKrathongs();
+            }
+        }
+
+        // 3. เลือกกระทง
+        let selectedKrathongImg = 'กระทง1.png';
         const selector = document.getElementById('selector');
         for (let i = 1; i <= 9; i++) {
             const card = document.createElement('div');
             card.className = `item-card ${i === 1 ? 'active' : ''}`;
-            card.onclick = () => selectKrathong(i, card);
+            card.onclick = () => {
+                document.querySelectorAll('.item-card').forEach(el => el.classList.remove('active'));
+                card.classList.add('active');
+                selectedKrathongImg = `กระทง${i}.png`;
+                document.getElementById('krathongDisplay').src = selectedKrathongImg;
+            };
             const img = document.createElement('img');
             img.src = `กระทง${i}.png`;
             img.onerror = () => { img.src = 'https://cdn-icons-png.flaticon.com/512/3501/3501140.png'; };
             card.appendChild(img); selector.appendChild(card);
-        }
-
-        function selectKrathong(index, cardEl) {
-            document.querySelectorAll('.item-card').forEach(el => el.classList.remove('active'));
-            cardEl.classList.add('active');
-            document.getElementById('krathongDisplay').src = `กระทง${index}.png`;
         }
 
         // 4. ช่องอัปโหลดรูป 5 รูป
@@ -636,7 +693,6 @@
             document.getElementById('step3Content').style.display = step === 3 ? 'block' : 'none';
         }
 
-        // 5. พิมพ์คำอธิษฐานเสร็จสิ้น -> ซ่อนแท็บล่าง โชว์ธูปเทียน
         function finishWish() {
             document.getElementById('bottomPanel').style.transform = 'translateY(150%)';
             document.getElementById('draggableSticks').style.display = 'flex';
@@ -644,45 +700,34 @@
             initDragSticks();
         }
 
-        // 6. ระบบลากธูปเทียนไปใส่กระทง
+        // 6. ลากธูปเทียน
         function initDragSticks() {
             const dragEl = document.getElementById('draggableSticks');
             let isDragging = false;
 
-            function startDrag(e) {
-                isDragging = true;
-                e.preventDefault();
-            }
-
+            function startDrag(e) { isDragging = true; e.preventDefault(); }
             function moveDrag(e) {
                 if (!isDragging) return;
                 const touch = e.touches ? e.touches[0] : e;
                 const frameRect = document.getElementById('frame').getBoundingClientRect();
-                
-                let newX = touch.clientX - frameRect.left;
-                let newY = touch.clientY - frameRect.top;
-
-                dragEl.style.left = `${newX}px`;
-                dragEl.style.top = `${newY}px`;
+                dragEl.style.left = `${touch.clientX - frameRect.left}px`;
+                dragEl.style.top = `${touch.clientY - frameRect.top}px`;
                 dragEl.style.bottom = 'auto';
                 dragEl.style.transform = 'translate(-50%, -50%)';
             }
-
             function endDrag() {
                 if (!isDragging) return;
                 isDragging = false;
                 
-                // นำธูปเทียนปักลงบนกระทง
                 const mainKrathong = document.getElementById('mainKrathong');
-                mainKrathong.appendChild(dragEl);
                 dragEl.style.top = '28px';
                 dragEl.style.left = '50%';
                 dragEl.style.transform = 'translateX(-50%)';
+                mainKrathong.appendChild(dragEl);
 
                 document.getElementById('dragHint').style.display = 'none';
                 document.getElementById('launchBtn').style.display = 'block';
 
-                // เริ่มเล่นเพลงเมื่อปักธูปเทียนเสร็จ
                 const audio = document.getElementById('bgMusic');
                 audio.play().catch(e => console.log("Audio play blocked:", e));
             }
@@ -690,62 +735,75 @@
             dragEl.addEventListener('touchstart', startDrag);
             document.addEventListener('touchmove', moveDrag);
             document.addEventListener('touchend', endDrag);
-
             dragEl.addEventListener('mousedown', startDrag);
             document.addEventListener('mousemove', moveDrag);
             document.addEventListener('mouseup', endDrag);
         }
 
-        // 7. กดปุ่มลอยพร้อมกัน
+        // 7. ลอยกระทงแล้วบันทึกลง LocalStorage ทันที
         function launchKrathong() {
             document.getElementById('launchBtn').style.display = 'none';
-            document.getElementById('tagLabel').style.display = 'inline-block';
-            document.getElementById('mainKrathong').classList.add('floating');
+            document.getElementById('mainKrathong').style.display = 'none'; // ซ่อนกระทงสร้าง
+
+            const newKrathong = {
+                id: 'k_' + Date.now(),
+                krathongImg: selectedKrathongImg,
+                wishText: document.getElementById('wishInput').value,
+                photos: photoDataList,
+                posX: 30 + Math.random() * 40, // สุ่มตำแหน่งบนแม่น้ำ
+                posY: 180 + Math.random() * 80,
+                owner: 'me'
+            };
+
+            allKrathongs.push(newKrathong);
+            localStorage.setItem('saved_krathongs', JSON.stringify(allKrathongs));
+            renderSavedKrathongs();
+
+            // เปิดหน้าความทรงจำทันทีที่ลอยเสร็จ
+            openSavedMemory(newKrathong);
         }
 
-        // 8. แสดงคำอธิษฐานเมื่อกดกระทง
-        function openMemoryModal() {
-            if (document.getElementById('mainKrathong').classList.contains('floating')) {
-                const wish = document.getElementById('wishInput').value;
-                document.getElementById('displayWishText').innerText = wish.trim() !== "" ? `“ ${wish} ”` : "“ ขอให้เรามีความสุข รักกันนานๆ ❤️ ”";
+        // 8. เปิดดูความทรงจำของกระทงที่บันทึกไว้
+        function openSavedMemory(kData) {
+            activeKrathongData = kData;
+            document.getElementById('displayWishText').innerText = kData.wishText.trim() !== "" ? `“ ${kData.wishText} ”` : "“ ขอให้เรามีความสุข รักกันนานๆ ❤️ ”";
+            
+            const scatterContainer = document.getElementById('scatterContainer');
+            scatterContainer.innerHTML = '';
+
+            const scatterPositions = [
+                { x: -115, y: -70, r: -8, delay: 0.1 },
+                { x: 110, y: -80, r: 12, delay: 0.25 },
+                { x: -120, y: 50, r: 6, delay: 0.4 },
+                { x: 125, y: 60, r: -14, delay: 0.55 },
+                { x: 0, y: -15, r: 3, delay: 0.7 }
+            ];
+
+            kData.photos.forEach((data, i) => {
+                const card = document.createElement('div');
+                card.className = 'polaroid-card';
+                const pos = scatterPositions[i];
                 
-                const scatterContainer = document.getElementById('scatterContainer');
-                scatterContainer.innerHTML = '';
+                card.style.setProperty('--dest-x', `${pos.x}px`);
+                card.style.setProperty('--dest-y', `${pos.y}px`);
+                card.style.setProperty('--rot', `${pos.r}deg`);
+                card.style.setProperty('--delay', `${pos.delay}s`);
+                
+                card.onclick = (e) => { 
+                    e.stopPropagation(); 
+                    openFullPhoto(data); 
+                };
 
-                const scatterPositions = [
-                    { x: -115, y: -70, r: -8, delay: 0.1 },
-                    { x: 110, y: -80, r: 12, delay: 0.25 },
-                    { x: -120, y: 50, r: 6, delay: 0.4 },
-                    { x: 125, y: 60, r: -14, delay: 0.55 },
-                    { x: 0, y: -15, r: 3, delay: 0.7 }
-                ];
+                const imgSrc = data.src || 'https://via.placeholder.com/150/ffb6c1/ffffff?text=Love';
+                card.innerHTML = `<img src="${imgSrc}"><p>?</p>`;
+                scatterContainer.appendChild(card);
 
-                photoDataList.forEach((data, i) => {
-                    const card = document.createElement('div');
-                    card.className = 'polaroid-card';
-                    const pos = scatterPositions[i];
-                    
-                    card.style.setProperty('--dest-x', `${pos.x}px`);
-                    card.style.setProperty('--dest-y', `${pos.y}px`);
-                    card.style.setProperty('--rot', `${pos.r}deg`);
-                    card.style.setProperty('--delay', `${pos.delay}s`);
-                    
-                    card.onclick = (e) => { 
-                        e.stopPropagation(); 
-                        openFullPhoto(data); 
-                    };
+                setTimeout(() => card.classList.add('show'), 50);
+            });
 
-                    const imgSrc = data.src || 'https://via.placeholder.com/150/ffb6c1/ffffff?text=Love';
-                    card.innerHTML = `<img src="${imgSrc}"><p>?</p>`;
-                    scatterContainer.appendChild(card);
-
-                    setTimeout(() => card.classList.add('show'), 50);
-                });
-
-                const overlay = document.getElementById('memoryOverlay');
-                overlay.style.display = 'flex';
-                setTimeout(() => overlay.classList.add('show'), 10);
-            }
+            const overlay = document.getElementById('memoryOverlay');
+            overlay.style.display = 'flex';
+            setTimeout(() => overlay.classList.add('show'), 10);
         }
 
         function closeMemoryModal() {
@@ -754,7 +812,6 @@
             setTimeout(() => overlay.style.display = 'none', 600);
         }
 
-        // 9. ป๊อปอัปขยายภาพเต็มจอ + อิโมจิลอยสโลว์มาก
         function openFullPhoto(data) {
             const imgSrc = data.src || 'https://via.placeholder.com/300/ffb6c1/ffffff?text=Love';
             const capText = data.caption || 'ความทรงจำของเรา';
@@ -788,9 +845,7 @@
                 heart.style.animationDelay = `${Math.random() * 0.6}s`;
                 frame.appendChild(heart);
 
-                setTimeout(() => {
-                    heart.remove();
-                }, 8000);
+                setTimeout(() => { heart.remove(); }, 8000);
             }
         }
     </script>
