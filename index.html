@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลอยกระทงคู่รักทางไกล</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0B192C;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 400px;
+            width: 90%;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        h2 { text-align: center; color: #FFD700; margin-bottom: 15px; }
+        label { font-size: 14px; display: block; margin-top: 10px; color: #ffeb3b; }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #ff6f61;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover { background: #ff3b2f; }
+        .river-scene {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, #020b18, #1b263b, #001e3d);
+            overflow: hidden;
+            text-align: center;
+        }
+        .moon {
+            width: 80px; height: 80px; background: #fff;
+            border-radius: 50%; position: absolute; top: 30px; right: 40px;
+            box-shadow: 0 0 30px #fff;
+        }
+        .krathong-box {
+            position: absolute;
+            bottom: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 40px;
+            animation: floatRiver 10s infinite linear;
+        }
+        .krathong {
+            background: #2e7d32;
+            padding: 15px;
+            border-radius: 50% 50% 20% 20%;
+            border: 3px dashed #ffd700;
+            text-align: center;
+            width: 120px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+        .krathong img {
+            width: 60px; height: 60px; border-radius: 50%;
+            object-fit: cover; border: 2px solid #fff;
+        }
+        @keyframes floatRiver {
+            0% { transform: translate(-50%, 0px); }
+            50% { transform: translate(-50%, -15px); }
+            100% { transform: translate(-50%, 0px); }
+        }
+        .back-btn {
+            position: absolute; bottom: 30px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px; border-radius: 20px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- หน้ากรอกข้อมูล -->
+    <div class="container" id="formSection">
+        <h2>🏮 ลอยกระทงคู่รักทางไกล</h2>
+        <label>ชื่อคุณและแฟน</label>
+        <input type="text" id="namesInput" placeholder="เช่น ตาล & ต้น">
+        
+        <label>ลิงก์รูปคู่ของคุณ</label>
+        <input type="text" id="imgInput" placeholder="วางลิงก์รูปภาพ (URL)">
+
+        <label>คำอธิษฐานของเรา</label>
+        <textarea id="wishInput" rows="3" placeholder="ขอให้เรามีความสุขและรักกันนานๆ..."></textarea>
+
+        <button onclick="launchKrathong()">ลอยกระทงกันเลย ✨</button>
+    </div>
+
+    <!-- หน้าจอแม่น้ำจำลอง -->
+    <div class="river-scene" id="riverSection">
+        <div class="moon"></div>
+        <h2 style="margin-top: 50px; text-shadow: 0 0 10px #ffd700;" id="displayName"></h2>
+        
+        <div class="krathong-box">
+            <div class="krathong">
+                <img id="displayImg1" src="" alt="รูปคู่">
+                <p id="displayWish" style="font-size: 12px; margin-top: 5px; color: #ffeb3b;"></p>
+            </div>
+            <div class="krathong">
+                <img id="displayImg2" src="" alt="รูปคู่">
+                <p style="font-size: 12px; margin-top: 5px; color: #ffeb3b;">ขอให้รักกันตลอดไป ❤️</p>
+            </div>
+        </div>
+
+        <div class="back-btn" onclick="goBack()">แก้ไขข้อมูล</div>
+    </div>
+
+    <script>
+        function launchKrathong() {
+            const names = document.getElementById('namesInput').value || "คู่รักสุดน่ารัก";
+            const imgUrl = document.getElementById('imgInput').value || "https://via.placeholder.com/60";
+            const wish = document.getElementById('wishInput').value || "สุขสันต์วันลอยกระทงจ้า";
+
+            document.getElementById('displayName').innerText = `กระทงของ: ${names}`;
+            document.getElementById('displayImg1').src = imgUrl;
+            document.getElementById('displayImg2').src = imgUrl;
+            document.getElementById('displayWish').innerText = wish;
+
+            document.getElementById('formSection').style.display = 'none';
+            document.getElementById('riverSection').style.display = 'block';
+        }
+
+        function goBack() {
+            document.getElementById('formSection').style.display = 'block';
+            document.getElementById('riverSection').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
