@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ลอยกระทงคู่รักทางไกล 🕯️✨</title>
+    
+    <!-- โหลดไลบรารี Realtime Database (JSONBin Cloud) สำหรับซิงค์ข้อมูลทั้งสองเครื่อง -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <style>
         * {
             box-sizing: border-box;
@@ -98,13 +103,14 @@
         .river-container {
             position: absolute; bottom: 0; left: 0;
             width: 100%; height: 75%;
-            overflow: hidden; pointer-events: none;
+            overflow: hidden; pointer-events: auto;
         }
 
         .water-wave {
             position: absolute; inset: 0;
             background: radial-gradient(ellipse at bottom, rgba(40, 100, 180, 0.2) 0%, transparent 70%);
             animation: wavePulse 4s ease-in-out infinite alternate;
+            pointer-events: none;
         }
 
         @keyframes wavePulse {
@@ -116,6 +122,7 @@
             position: absolute; width: 22px; height: 22px;
             background-size: contain; background-repeat: no-repeat; background-position: center;
             opacity: 0; animation: driftRightRiver linear infinite;
+            pointer-events: none;
         }
 
         @keyframes driftRightRiver {
@@ -125,6 +132,7 @@
             100% { transform: translate(var(--end-x), var(--end-y)) scale(1.1); opacity: 0; }
         }
 
+        /* กระทงที่ลอยบนผิวน้ำพร้อมธูปเทียนและป้ายชื่อ */
         .saved-krathong-item {
             position: absolute;
             display: flex;
@@ -132,8 +140,8 @@
             align-items: center;
             cursor: pointer;
             z-index: 15;
-            transition: transform 0.3s;
             animation: mainFloat 3.5s ease-in-out infinite alternate;
+            transform: translate(-50%, -50%);
         }
 
         .saved-krathong-item img {
@@ -141,7 +149,7 @@
             filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.6));
         }
 
-        .saved-krathong-item .tag-label {
+        .saved-tag-label {
             background: rgba(255, 255, 255, 0.9);
             border: 1px solid #ff69b4; color: #d81b60;
             padding: 2px 12px; border-radius: 12px;
@@ -149,17 +157,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
-        .delete-krathong-btn {
-            position: absolute;
-            top: -10px; right: 20px;
-            background: #ff3b30; color: #fff;
-            border: 2px solid #fff; width: 26px; height: 26px;
-            border-radius: 50%; font-size: 14px; font-weight: bold;
-            display: none; justify-content: center; align-items: center;
-            cursor: pointer; z-index: 25;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
-        }
-
+        /* กระทงหลักตอนสร้าง */
         .main-krathong-wrapper {
             position: absolute; 
             bottom: 160px; 
@@ -328,11 +326,12 @@
             box-shadow: 0 3px 10px rgba(255, 20, 147, 0.3);
         }
 
+        /* ปุ่มลอยกระทงปรับมาอยู่กึ่งกลางหน้าจอ */
         .floating-launch-btn {
-            position: absolute; bottom: 35px; left: 50%;
+            position: absolute; bottom: 45%; left: 50%;
             transform: translateX(-50%);
             background: #ffffff;
-            color: #d81b60; border: 2px solid #ff69b4; padding: 12px 28px;
+            color: #d81b60; border: 2px solid #ff69b4; padding: 12px 32px;
             border-radius: 25px; font-size: 14px; font-weight: bold;
             cursor: pointer; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
             z-index: 60; display: none;
@@ -340,9 +339,9 @@
         }
 
         @keyframes pulseBtn {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.05); }
+            100% { transform: translateX(-50%) scale(1); }
         }
 
         .memory-overlay {
@@ -505,6 +504,7 @@
             </div>
         </div>
 
+        <!-- ปุ่มลอยกระทงตรงกลาง -->
         <button class="floating-launch-btn" id="launchBtn" onclick="launchKrathong()">ลอยพร้อมกัน ✨</button>
 
         <div class="bottom-panel" id="bottomPanel">
@@ -548,18 +548,36 @@
 
     <script>
         // ==========================================================
-        // 🛠️ ตั้งค่าชื่อห้อง และบทบาทเครื่องนี้ (แก้ไขตรงนี้ได้เลยครับ)
+        // 🛠️ กำหนดชื่อห้อง และสถานะเครื่องของคุณที่นี่
         // ==========================================================
-        const CURRENT_ROOM = 'golf_bow'; // ชื่อห้องคู่รัก
-        const MY_ROLE = 'me';          // เครื่องคุณใส่ 'me' (แสดงป้ายชื่อ me)
-                                       // เครื่องแฟนแก้เป็น 'partner' (แสดงป้ายชื่อ U)
+        const CURRENT_ROOM = 'golf_bow'; // ชื่อห้องคู่รัก (ต้องใช้ชื่อเดียวกันทั้ง 2 เครื่อง)
+        const MY_ROLE = 'me';          // เครื่องคุณใส่ 'me' (ป้ายชื่อขึ้น me)
+                                       // เครื่องแฟนเปลี่ยนเป็น 'partner' (ป้ายชื่อขึ้น you)
         // ==========================================================
 
-        const roomKey = 'saved_krathongs_' + CURRENT_ROOM;
-        let photoDataList = Array(5).fill(null).map(() => ({ src: '', caption: '' }));
-        let allKrathongs = JSON.parse(localStorage.getItem(roomKey)) || [];
+        const firebaseConfig = {
+            databaseURL: "https://krathong-memory-default-rtdb.firebaseio.com/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
         document.getElementById('roomBadge').innerText = `ห้อง: ${CURRENT_ROOM}`;
+
+        let photoDataList = Array(5).fill(null).map(() => ({ src: '', caption: '' }));
+        let allKrathongs = [];
+
+        // เชื่อมต่อออนไลน์เรียลไทม์
+        const roomRef = db.ref('rooms/' + CURRENT_ROOM + '/krathongs');
+        roomRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            allKrathongs = [];
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    allKrathongs.push({ id: key, ...data[key] });
+                });
+            }
+            renderSavedKrathongs();
+        });
 
         // ท้องฟ้า
         const sky = document.getElementById('sky');
@@ -594,17 +612,13 @@
             bgKrathong.style.setProperty('--start-x', `${startX}px`);
             bgKrathong.style.setProperty('--start-y', `${startY}px`);
             bgKrathong.style.setProperty('--end-x', `${endX}px`);
-            bgKrathong.style.setProperty('--end-y', `${endY}px`);
+            bgKrathong.style.setProperty('--end-y`, `${endY}px`);
             bgKrathong.style.animationDuration = `${12 + Math.random() * 4}s`;
             bgKrathong.style.animationDelay = `${i * 2.5}s`;
             river.appendChild(bgKrathong);
         }
 
-        renderSavedKrathongs();
-
         function renderSavedKrathongs() {
-            // โหลดข้อมูลล่าสุดจากเครื่องอัตโนมัติ
-            allKrathongs = JSON.parse(localStorage.getItem(roomKey)) || [];
             const container = document.getElementById('savedKrathongsContainer');
             container.innerHTML = '';
 
@@ -614,42 +628,40 @@
                 item.style.left = `${kData.posX}%`;
                 item.style.bottom = `${kData.posY}px`;
 
-                // ถ้าเป็นของแฟน (partner) จะแสดงป้ายชื่อเป็น 'U' ทันที
-                let displayName = (kData.owner === 'partner') ? 'U' : 'me';
+                // กำหนดชื่อป้าย: ของเรา = me, ของแฟน = you
+                let displayName = (kData.owner === 'partner') ? 'you' : 'me';
 
                 item.innerHTML = `
-                    <button class="delete-krathong-btn" onclick="deleteKrathong(event, '${kData.id}')">✕</button>
                     <img src="${kData.krathongImg}" alt="กระทง">
-                    <div class="tag-label">${displayName}</div>
+                    <div style="position: absolute; top: 15px; display: flex; align-items: flex-end; gap: 4px; pointer-events: none;">
+                        <div style="width:6px; height:20px; background:linear-gradient(to right, #ffc0cb, #fff); border-radius:2px; position:relative;">
+                            <div style="position:absolute; top:-8px; left:-1px; width:8px; height:8px; background:radial-gradient(circle,#fff,#ff3d00); border-radius:50%; box-shadow:0 0 6px #ff3d00;"></div>
+                        </div>
+                    </div>
+                    <div class="saved-tag-label">${displayName}</div>
                 `;
 
+                // ระบบกดค้าง 1 วินาที เพื่อถามยืนยันก่อนลบ (แก้ปัญหาเด้งเซฟรูป)
                 let pressTimer;
-                const showDeleteBtn = () => {
-                    const btn = item.querySelector('.delete-krathong-btn');
-                    btn.style.display = 'flex';
+                const triggerDelete = () => {
+                    if (confirm("คุณต้องการลบกระทงความทรงจำนี้ใช่หรือไม่?")) {
+                        db.ref('rooms/' + CURRENT_ROOM + '/krathongs/' + kData.id).remove();
+                    }
                 };
 
-                item.addEventListener('touchstart', () => { pressTimer = setTimeout(showDeleteBtn, 800); });
+                item.addEventListener('touchstart', () => { pressTimer = setTimeout(triggerDelete, 1000); });
                 item.addEventListener('touchend', () => clearTimeout(pressTimer));
-                item.addEventListener('mousedown', () => { pressTimer = setTimeout(showDeleteBtn, 800); });
+                item.addEventListener('mousedown', () => { pressTimer = setTimeout(triggerDelete, 1000); });
                 item.addEventListener('mouseup', () => clearTimeout(pressTimer));
 
+                // กดคลิกปกติเพื่อเปิดดูความทรงจำ
                 item.onclick = (e) => {
-                    if (e.target.classList.contains('delete-krathong-btn')) return;
+                    clearTimeout(pressTimer);
                     openSavedMemory(kData);
                 };
 
                 container.appendChild(item);
             });
-        }
-
-        function deleteKrathong(e, id) {
-            e.stopPropagation();
-            if (confirm("ต้องการลบกระทงความทรงจำนี้ใช่หรือไม่?")) {
-                allKrathongs = allKrathongs.filter(k => k.id !== id);
-                localStorage.setItem(roomKey, JSON.stringify(allKrathongs));
-                renderSavedKrathongs();
-            }
         }
 
         let selectedKrathongImg = 'กระทง1.png';
@@ -747,24 +759,26 @@
             document.addEventListener('mouseup', endDrag);
         }
 
+        // เมื่อกดลบบันทึกข้อมูลขึ้นระบบคลาวด์ กระจายตำแหน่งทั่วแม่น้ำ และไม่เด้งเปิดหน้าความทรงจำทันที
         function launchKrathong() {
             document.getElementById('launchBtn').style.display = 'none';
             document.getElementById('mainKrathong').style.display = 'none';
 
             const newKrathong = {
-                id: 'k_' + Date.now(),
                 krathongImg: selectedKrathongImg,
                 wishText: document.getElementById('wishInput').value,
                 photos: photoDataList,
-                posX: 30 + Math.random() * 40,
-                posY: 180 + Math.random() * 80,
-                owner: MY_ROLE // บันทึกตามบทบาทเครื่อง (me หรือ partner)
+                posX: 15 + Math.random() * 70, // กระจายตำแหน่งกว้างทั่วหน้าจอ
+                posY: 100 + Math.random() * 320, // กระจายตำแหน่งความลึกในแม่น้ำ
+                owner: MY_ROLE 
             };
 
-            allKrathongs.push(newKrathong);
-            localStorage.setItem(roomKey, JSON.stringify(allKrathongs));
-            renderSavedKrathongs();
-            openSavedMemory(newKrathong);
+            roomRef.push(newKrathong);
+            
+            // รีเซ็ตหน้าจอให้กลับมาพร้อมลอยใหม่โดยไม่บังคับเปิดหน้าความทรงจำ
+            setTimeout(() => {
+                location.reload();
+            }, 500);
         }
 
         function openSavedMemory(kData) {
