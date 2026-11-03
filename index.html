@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ลอยกระทงคู่รักทางไกล 🕯️✨</title>
     <style>
         * {
@@ -10,6 +10,7 @@
             margin: 0;
             padding: 0;
             user-select: none;
+            -webkit-user-select: none;
             font-family: 'Sukhumvit Set', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
@@ -20,9 +21,10 @@
             align-items: center;
             min-height: 100vh;
             color: #ffffff;
+            overflow: hidden;
         }
 
-        /* กรอบมือถือแนวตั้ง 9:16 */
+        /* กรอบมือถือ 9:16 */
         .mobile-frame {
             width: 100%;
             max-width: 414px;
@@ -44,7 +46,7 @@
             pointer-events: none;
         }
 
-        /* ท้องฟ้า 20% บน สำหรับโคมลอยและพลุ */
+        /* ท้องฟ้า 25% ด้านบน (โคมลอย + พลุ) */
         .sky-container {
             position: absolute;
             top: 0;
@@ -73,7 +75,6 @@
             100% { transform: translateY(-30px) scale(1); opacity: 0; }
         }
 
-        /* พลุเล็กๆ บนท้องฟ้า */
         .firework {
             position: absolute;
             width: 4px;
@@ -90,7 +91,7 @@
             100% { transform: scale(2.2); opacity: 0; }
         }
 
-        /* แม่น้ำ 80% ล่าง */
+        /* แม่น้ำด้านล่าง 75% */
         .river-container {
             position: absolute;
             bottom: 0;
@@ -130,10 +131,10 @@
             100% { transform: translateX(410px) translateY(0px); }
         }
 
-        /* กระทงหลักตรงกลางจอ (เว้นที่ให้แท็บเล็กๆ ด้านล่าง) */
+        /* กระทงหลัก */
         .main-krathong-wrapper {
             position: absolute;
-            bottom: 140px;
+            bottom: 150px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -141,10 +142,11 @@
             align-items: center;
             transition: all 1s ease;
             z-index: 10;
+            cursor: pointer;
         }
 
         .main-krathong-wrapper.floating {
-            bottom: 180px;
+            bottom: 200px;
             animation: mainFloat 3.5s ease-in-out infinite alternate;
         }
 
@@ -153,120 +155,90 @@
             100% { transform: translateX(-50%) translateY(-10px) rotate(1deg); }
         }
 
-        .photos-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: -12px;
-            z-index: 2;
-        }
-
-        .photo-card {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 3px 3px 6px 3px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-            width: 58px;
-            text-align: center;
-            transform: rotate(-3deg);
-        }
-
-        .photo-card:nth-child(2) {
-            transform: rotate(3deg);
-        }
-
-        .photo-card img {
-            width: 100%;
-            height: 52px;
-            object-fit: cover;
-            border-radius: 6px;
-            background: #eee;
-        }
-
-        .photo-card p {
-            font-size: 8px;
-            color: #d81b60;
-            margin-top: 2px;
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .incense-candle {
+        /* รูปแบบและเอฟเฟกต์ธูปเทียนปักบนกระทง */
+        .stick-container {
+            position: absolute;
+            top: 20px;
             display: flex;
             align-items: flex-end;
-            gap: 5px;
-            margin-bottom: -8px;
-            z-index: 3;
+            gap: 6px;
+            z-index: 12;
+            cursor: grab;
         }
 
         .candle-flame {
-            width: 7px;
-            height: 12px;
+            width: 8px;
+            height: 14px;
             background: radial-gradient(circle, #fff 10%, #ffeb3b 50%, #ff3d00 100%);
             border-radius: 50% 50% 20% 20%;
-            box-shadow: 0 0 10px #ffbb00;
-            animation: flicker 0.2s infinite alternate;
+            box-shadow: 0 0 10px #ffbb00, 0 0 20px #ff3d00;
+            animation: flicker 0.15s infinite alternate;
         }
 
         @keyframes flicker {
-            0% { transform: scale(1); opacity: 0.9; }
-            100% { transform: scale(1.15); opacity: 1; }
+            0% { transform: scale(1) rotate(-2deg); opacity: 0.9; }
+            100% { transform: scale(1.15) rotate(2deg); opacity: 1; }
         }
 
         .incense-stick {
-            width: 1.5px;
-            height: 18px;
-            background: #8b5a2b;
+            width: 2px;
+            height: 22px;
+            background: #7a4b1e;
             position: relative;
         }
 
-        .incense-glow {
+        /* ควันธูปเสมือนจริง */
+        .incense-smoke {
             position: absolute;
-            top: 0;
-            left: -1px;
-            width: 3.5px;
-            height: 3.5px;
-            background: #ff3d00;
+            top: -12px;
+            left: -3px;
+            width: 8px;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.4);
+            filter: blur(3px);
             border-radius: 50%;
-            box-shadow: 0 0 5px #ff3d00;
+            animation: smokeRise 2s infinite ease-out;
+        }
+
+        @keyframes smokeRise {
+            0% { transform: translateY(0) scale(0.5); opacity: 0.8; }
+            100% { transform: translateY(-20px) scale(1.8); opacity: 0; }
         }
 
         .krathong-img {
-            width: 150px;
-            height: 120px;
+            width: 160px;
+            height: 130px;
             object-fit: contain;
-            filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.6));
+            filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.6));
         }
 
-        .wish-tag {
+        /* ป้ายบอกว่าเป็นกระทงใคร (me / you) */
+        .tag-label {
             background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #ffb6c1;
+            border: 1px solid #ff69b4;
             color: #d81b60;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 10px;
-            margin-top: 6px;
-            max-width: 200px;
-            text-align: center;
-            font-weight: 600;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            padding: 3px 14px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             display: none;
         }
 
-        /* แท็บล่างสุด สีขาวชมพู ทันสมัย นุ่มฟู ไม่บังตัวกระทง */
+        /* แท็บล่างสุดสีขาว-ชมพูพาสเทล */
         .bottom-panel {
             position: absolute;
             bottom: 12px;
             left: 12px;
             right: 12px;
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 182, 193, 0.6);
+            border: 1px solid rgba(255, 182, 193, 0.8);
             border-radius: 16px;
             padding: 10px 14px;
             z-index: 20;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
             transition: transform 0.4s ease;
         }
 
@@ -278,7 +250,6 @@
             font-weight: bold;
         }
 
-        /* สไลเดอร์เลือกกระทง 9 แบบ */
         .krathong-selector {
             display: flex;
             gap: 8px;
@@ -288,9 +259,7 @@
             scrollbar-width: none;
         }
 
-        .krathong-selector::-webkit-scrollbar {
-            display: none;
-        }
+        .krathong-selector::-webkit-scrollbar { display: none; }
 
         .item-card {
             flex: 0 0 auto;
@@ -310,27 +279,12 @@
             border-color: #ff69b4;
             background: #fff0f5;
             transform: scale(1.05);
-            box-shadow: 0 2px 8px rgba(255, 105, 180, 0.3);
         }
 
-        .item-card img {
-            width: 80%;
-            height: 80%;
-            object-fit: contain;
-        }
+        .item-card img { width: 80%; height: 80%; object-fit: contain; }
 
-        /* ฟอร์ม input สีชมพูพาสเทล */
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 8px;
-        }
-
-        .input-row {
-            display: flex;
-            gap: 6px;
-        }
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+        .input-row { display: flex; gap: 6px; }
 
         input[type="text"], textarea {
             width: 100%;
@@ -343,13 +297,7 @@
             outline: none;
         }
 
-        input[type="text"]::placeholder, textarea::placeholder {
-            color: #aaa;
-        }
-
-        input[type="file"] {
-            display: none;
-        }
+        input[type="file"] { display: none; }
 
         .upload-btn {
             background: #fff0f5;
@@ -369,80 +317,207 @@
             background: linear-gradient(135deg, #ff69b4, #ff1493);
             border: none;
             color: #fff;
-            padding: 8px;
+            padding: 9px;
             border-radius: 10px;
             font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 3px 10px rgba(255, 20, 147, 0.3);
         }
+
+        /* ถาดธูปเทียนสำหรับเตรียมลาก */
+        .stick-tray {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fff0f5;
+            border: 1px dashed #ff69b4;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+
+        /* หน้าต่าง Pop-up แสดงรูป/คำอธิษฐานเมื่อคลิกกระทง */
+        .popup-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .popup-card {
+            background: #ffffff;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 320px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            position: relative;
+            text-align: center;
+            color: #333;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            background: #fff0f5;
+            color: #ff1493;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .popup-title {
+            font-size: 15px;
+            color: #d81b60;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .popup-photos {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .popup-photo-item {
+            flex: 1;
+            background: #fff0f5;
+            padding: 6px;
+            border-radius: 10px;
+            border: 1px solid #ffd1dc;
+            cursor: pointer;
+        }
+
+        .popup-photo-item img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .popup-photo-item p {
+            font-size: 10px;
+            color: #d81b60;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .popup-wish-box {
+            background: #fff5f7;
+            border: 1px solid #ffb6c1;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 12px;
+            color: #444;
+            line-height: 1.4;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        /* รูปภาพขยายใหญ่เต็มจอเมื่อกดรูป */
+        .full-photo-modal {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 150;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .full-photo-modal img {
+            max-width: 90%;
+            max-height: 60vh;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+            object-fit: contain;
+        }
+
+        .full-photo-caption {
+            color: #fff;
+            margin-top: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
-    <div class="mobile-frame">
+    <div class="mobile-frame" id="frame">
         <div class="overlay-dark"></div>
 
-        <!-- ท้องฟ้าด้านบน 25% (โคมลอย + พลุ) -->
+        <!-- ท้องฟ้า 25% ด้านบน -->
         <div class="sky-container" id="sky"></div>
 
-        <!-- แม่น้ำด้านล่าง 75% -->
+        <!-- แม่น้ำ 75% ด้านล่าง -->
         <div class="river-container" id="river">
             <div class="water-wave"></div>
         </div>
 
-        <!-- กระทงหลักคู่รัก -->
-        <div class="main-krathong-wrapper" id="mainKrathong">
-            <div class="incense-candle" id="lighting" style="display: none;">
+        <!-- กระทงหลัก -->
+        <div class="main-krathong-wrapper" id="mainKrathong" onclick="openPopup()">
+            <!-- ธูปเทียนที่ถูกลากมาปัก -->
+            <div class="stick-container" id="placedSticks" style="display: none;">
                 <div class="candle-flame"></div>
-                <div class="incense-stick"><div class="incense-glow"></div></div>
-                <div class="incense-stick"><div class="incense-glow"></div></div>
-                <div class="incense-stick"><div class="incense-glow"></div></div>
-            </div>
-
-            <div class="photos-container" id="photosContainer" style="display: none;">
-                <div class="photo-card" id="card1" style="display: none;">
-                    <img id="img1" src="" alt="รูปเรา">
-                    <p id="label1">เรา</p>
-                </div>
-                <div class="photo-card" id="card2" style="display: none;">
-                    <img id="img2" src="" alt="รูปแฟน">
-                    <p id="label2">เธอ</p>
-                </div>
+                <div class="incense-stick"><div class="incense-smoke"></div></div>
+                <div class="incense-stick"><div class="incense-smoke"></div></div>
+                <div class="incense-stick"><div class="incense-smoke"></div></div>
             </div>
 
             <img id="krathongDisplay" class="krathong-img" src="กระทง1.png" alt="กระทง" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3501/3501140.png'">
             
-            <div class="wish-tag" id="wishTag"></div>
+            <!-- ป้ายบอกกระทงเรา -->
+            <div class="tag-label" id="tagLabel">me</div>
         </div>
 
-        <!-- แท็บควบคุมล่างสุด (สีขาว-ชมพู นุ่มฟู ขนาดกะทัดรัด) -->
+        <!-- แท็บควบคุมล่างสุด (สีขาว-ชมพู) -->
         <div class="bottom-panel" id="bottomPanel">
             
-            <!-- สเต็ปที่ 1: เลือกกระทง 9 แบบ -->
+            <!-- สเต็ปที่ 1: เลือกกระทง -->
             <div id="step1Content">
                 <div class="panel-title">เลือกกระทงสวยๆ 🌸</div>
                 <div class="krathong-selector" id="selector"></div>
                 <button class="btn-primary" onclick="goToStep(2)">ถัดไป: ใส่รูปคู่ 📸</button>
             </div>
 
-            <!-- สเต็ปที่ 2: ใส่รูปและข้อความใต้รูป -->
+            <!-- สเต็ปที่ 2: ใส่รูปคู่ -->
             <div id="step2Content" style="display: none;">
                 <div class="panel-title">อัปโหลดรูปความทรงจำ 💕</div>
                 <div class="form-group">
                     <div class="input-row">
                         <label class="upload-btn">
                             📷 รูปเรา
-                            <input type="file" accept="image/*" onchange="previewImage(event, 'img1', 'card1')">
+                            <input type="file" accept="image/*" onchange="handleImageUpload(event, 'img1Data')">
                         </label>
-                        <input type="text" id="text1" placeholder="ข้อความใต้รูปเรา" oninput="updateText('label1', this.value, 'เรา')">
+                        <input type="text" id="text1" placeholder="ข้อความใต้รูปเรา">
                     </div>
                     <div class="input-row">
                         <label class="upload-btn">
                             📷 รูปแฟน
-                            <input type="file" accept="image/*" onchange="previewImage(event, 'img2', 'card2')">
+                            <input type="file" accept="image/*" onchange="handleImageUpload(event, 'img2Data')">
                         </label>
-                        <input type="text" id="text2" placeholder="ข้อความใต้รูปแฟน" oninput="updateText('label2', this.value, 'เธอ')">
+                        <input type="text" id="text2" placeholder="ข้อความใต้รูปแฟน">
                     </div>
                 </div>
                 <button class="btn-primary" onclick="goToStep(3)">ถัดไป: คำอธิษฐาน ✨</button>
@@ -454,14 +529,62 @@
                 <div class="form-group">
                     <textarea id="wishInput" rows="2" placeholder="พิมพ์คำอธิษฐานที่นี่..."></textarea>
                 </div>
-                <button class="btn-primary" onclick="launchKrathong()">จุดธูปเทียน & ลอยกระทง 🌌</button>
+                <button class="btn-primary" onclick="finishWish()">พิมพ์คำอธิษฐานเสร็จสิ้น 🕯️</button>
+            </div>
+
+            <!-- สเต็ปที่ 4: ลากธูปเทียนปักบนกระทง -->
+            <div id="step4Content" style="display: none;">
+                <div class="panel-title">ลากธูปเทียนด้านล่างไปปักบนกระทง ✨</div>
+                <div class="stick-tray">
+                    <div class="stick-container" id="draggableSticks" style="position: relative; top: 0;">
+                        <div class="candle-flame"></div>
+                        <div class="incense-stick"><div class="incense-smoke"></div></div>
+                        <div class="incense-stick"><div class="incense-smoke"></div></div>
+                        <div class="incense-stick"><div class="incense-smoke"></div></div>
+                    </div>
+                </div>
+                <button class="btn-primary" id="launchBtn" style="display: none;" onclick="launchKrathong()">พร้อมลอยกระทงร่วมกัน ✨</button>
             </div>
 
         </div>
+
+        <!-- ป๊อปอัปเมื่อกดกระทง -->
+        <div class="popup-overlay" id="popupOverlay">
+            <div class="popup-card">
+                <button class="close-btn" onclick="closePopup()">✕</button>
+                <div class="popup-title">กระทงของเรา ❤️</div>
+                
+                <div class="popup-photos">
+                    <div class="popup-photo-item" onclick="openFullPhoto('img1Data', 'text1')">
+                        <img id="popupImg1" src="https://via.placeholder.com/80" alt="รูปเรา">
+                        <p id="popupLabel1">รูปเรา</p>
+                    </div>
+                    <div class="popup-photo-item" onclick="openFullPhoto('img2Data', 'text2')">
+                        <img id="popupImg2" src="https://via.placeholder.com/80" alt="รูปแฟน">
+                        <p id="popupLabel2">รูปแฟน</p>
+                    </div>
+                </div>
+
+                <div class="panel-title" style="text-align: left; margin-top: 8px;">คำอธิษฐาน:</div>
+                <div class="popup-wish-box" id="popupWishText">
+                    ขอให้เรามีความสุข รักกันนานๆ...
+                </div>
+            </div>
+        </div>
+
+        <!-- ป๊อปอัปขยายรูปใหญ่เต็มจอ -->
+        <div class="full-photo-modal" id="fullPhotoModal">
+            <button class="close-btn" style="top: 20px; right: 20px; width: 35px; height: 35px; font-size: 18px;" onclick="closeFullPhoto()">✕</button>
+            <img id="fullImg" src="" alt="รูปขยายใหญ่">
+            <div class="full-photo-caption" id="fullCaption"></div>
+        </div>
+
     </div>
 
     <script>
-        // 1. สร้างโคมลอยให้ค่อยๆ ลอยขึ้นเฉพาะโซนท้องฟ้าด้านบน ไม่ค้างตรงกลาง
+        let img1Src = '', img2Src = '';
+
+        // 1. โคมลอย + พลุ
         const sky = document.getElementById('sky');
         for (let i = 0; i < 10; i++) {
             const lantern = document.createElement('div');
@@ -472,7 +595,6 @@
             sky.appendChild(lantern);
         }
 
-        // เพิ่มพลุเล็กๆ บนท้องฟ้า
         for (let i = 0; i < 3; i++) {
             const fw = document.createElement('div');
             fw.className = 'firework';
@@ -483,7 +605,7 @@
             sky.appendChild(fw);
         }
 
-        // 2. สร้างกระทงลอยไกลๆ บนผิวน้ำ
+        // 2. กระทงลอยไกลๆ
         const river = document.getElementById('river');
         for (let i = 0; i < 5; i++) {
             const bgKrathong = document.createElement('div');
@@ -495,7 +617,7 @@
             river.appendChild(bgKrathong);
         }
 
-        // 3. สร้างรายการเลือกกระทง 9 แบบ
+        // 3. แถบเลือกกระทง 9 แบบ
         const selector = document.getElementById('selector');
         for (let i = 1; i <= 9; i++) {
             const card = document.createElement('div');
@@ -516,48 +638,120 @@
             document.getElementById('krathongDisplay').src = `กระทง${index}.png`;
         }
 
-        // ระบบสลับสเต็ปทีละหน้า
         function goToStep(step) {
             document.getElementById('step1Content').style.display = step === 1 ? 'block' : 'none';
             document.getElementById('step2Content').style.display = step === 2 ? 'block' : 'none';
             document.getElementById('step3Content').style.display = step === 3 ? 'block' : 'none';
+            document.getElementById('step4Content').style.display = step === 4 ? 'block' : 'none';
         }
 
-        // พรีวิวรูปภาพ
-        function previewImage(event, imgId, cardId) {
+        // การจัดการรูปภาพ
+        function handleImageUpload(event, targetVar) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById(imgId).src = e.target.result;
-                    document.getElementById(cardId).style.display = 'block';
-                    document.getElementById('photosContainer').style.display = 'flex';
+                    if (targetVar === 'img1Data') {
+                        img1Src = e.target.result;
+                        document.getElementById('popupImg1').src = img1Src;
+                    } else {
+                        img2Src = e.target.result;
+                        document.getElementById('popupImg2').src = img2Src;
+                    }
                 }
                 reader.readAsDataURL(file);
             }
         }
 
-        function updateText(labelId, val, defaultText) {
-            document.getElementById(labelId).innerText = val.trim() !== "" ? val : defaultText;
+        // พิมพ์คำอธิษฐานเสร็จสิ้น -> ไปสเต็ปปักธูปเทียน
+        function finishWish() {
+            const wish = document.getElementById('wishInput').value;
+            document.getElementById('popupWishText').innerText = wish.trim() !== "" ? wish : "ขอให้เรามีความสุข รักกันนานๆ ❤️";
+            goToStep(4);
+            initDragSticks();
         }
 
-        // กดลอยกระทง
-        function launchKrathong() {
-            const wish = document.getElementById('wishInput').value;
-            if (wish.trim() !== "") {
-                const wishTag = document.getElementById('wishTag');
-                wishTag.innerText = `“ ${wish} ”`;
-                wishTag.style.display = 'block';
+        // 4. ระบบลากวางธูปเทียน (Drag & Drop ทั้งนิ้วสัมผัสและเมาส์)
+        function initDragSticks() {
+            const dragEl = document.getElementById('draggableSticks');
+            let isDragging = false;
+            let startX, startY;
+
+            function startDrag(e) {
+                isDragging = true;
+                const touch = e.touches ? e.touches[0] : e;
+                startX = touch.clientX - dragEl.offsetLeft;
+                startY = touch.clientY - dragEl.offsetTop;
+                dragEl.style.position = 'fixed';
+                dragEl.style.zIndex = '1000';
             }
 
-            // จุดธูปเทียน
-            document.getElementById('lighting').style.display = 'flex';
+            function moveDrag(e) {
+                if (!isDragging) return;
+                const touch = e.touches ? e.touches[0] : e;
+                dragEl.style.left = `${touch.clientX - 20}px`;
+                dragEl.style.top = `${touch.clientY - 20}px`;
+            }
 
-            // ซ่อนแท็บควบคุมล่างสุดเพื่อให้เห็นกระทงลอยเด่นๆ เต็มตา
+            function endDrag(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                // ปักลงบนกระทงทันทีที่ลากมาวาง
+                document.getElementById('draggableSticks').style.display = 'none';
+                document.getElementById('placedSticks').style.display = 'flex';
+                document.getElementById('launchBtn').style.display = 'block';
+            }
+
+            dragEl.addEventListener('touchstart', startDrag);
+            dragEl.addEventListener('touchmove', moveDrag);
+            dragEl.addEventListener('touchend', endDrag);
+
+            dragEl.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', moveDrag);
+            document.addEventListener('mouseup', endDrag);
+        }
+
+        // 5. กดปล่อยกระทงร่วมกัน
+        function launchKrathong() {
+            // ซ่อนแท็บล่างสุด
             document.getElementById('bottomPanel').style.transform = 'translateY(150%)';
 
-            // ขยับกระทงหลักขึ้นไปลอยบนแม่น้ำ
+            // แสดงป้ายชื่อ me
+            document.getElementById('tagLabel').style.display = 'inline-block';
+
+            // ขยับกระทงขึ้นไปลอยบนแม่น้ำ
             document.getElementById('mainKrathong').classList.add('floating');
+        }
+
+        // 6. ระบบ Pop-up เมื่อกดกระทง
+        function openPopup() {
+            // เปิดป๊อปอัปเฉพาะเมื่อเริ่มลอยกระทงแล้ว
+            if (document.getElementById('mainKrathong').classList.contains('floating')) {
+                document.getElementById('popupLabel1').innerText = document.getElementById('text1').value || 'รูปเรา';
+                document.getElementById('popupLabel2').innerText = document.getElementById('text2').value || 'รูปแฟน';
+                document.getElementById('popupOverlay').style.display = 'flex';
+            }
+        }
+
+        function closePopup() {
+            document.getElementById('popupOverlay').style.display = 'none';
+        }
+
+        // 7. ระบบรูปภาพขยายใหญ่เต็มจอ
+        function openFullPhoto(imgVar, textId) {
+            const src = imgVar === 'img1Data' ? img1Src : img2Src;
+            const caption = document.getElementById(textId).value || (imgVar === 'img1Data' ? 'รูปเรา' : 'รูปแฟน');
+            
+            if (src) {
+                document.getElementById('fullImg').src = src;
+                document.getElementById('fullCaption').innerText = caption;
+                document.getElementById('fullPhotoModal').style.display = 'flex';
+            }
+        }
+
+        function closeFullPhoto() {
+            document.getElementById('fullPhotoModal').style.display = 'none';
         }
     </script>
 </body>
