@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ลอยกระทงคู่รักทางไกล 🕯️✨</title>
-    <!-- เรียกใช้งาน Firebase SDK สำหรับเชื่อมต่อฐานข้อมูลแบบเรียลไทม์ -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -27,6 +24,7 @@
             overflow: hidden;
         }
 
+        /* กรอบมือถือแนวตั้ง 9:16 */
         .mobile-frame {
             width: 100%;
             max-width: 414px;
@@ -134,19 +132,12 @@
             align-items: center;
             cursor: pointer;
             z-index: 15;
+            transition: transform 0.3s;
             animation: mainFloat 3.5s ease-in-out infinite alternate;
-            -webkit-touch-callout: none;
-        }
-
-        .saved-krathong-content {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
         .saved-krathong-item img {
-            width: 170px; height: 140px; object-fit: contain;
+            width: 150px; height: 120px; object-fit: contain;
             filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.6));
         }
 
@@ -160,12 +151,12 @@
 
         .delete-krathong-btn {
             position: absolute;
-            top: -10px; right: 10px;
+            top: -10px; right: 20px;
             background: #ff3b30; color: #fff;
-            border: 2px solid #fff; width: 28px; height: 28px;
-            border-radius: 50%; font-size: 16px; font-weight: bold;
+            border: 2px solid #fff; width: 26px; height: 26px;
+            border-radius: 50%; font-size: 14px; font-weight: bold;
             display: none; justify-content: center; align-items: center;
-            cursor: pointer; z-index: 30;
+            cursor: pointer; z-index: 25;
             box-shadow: 0 3px 8px rgba(0,0,0,0.4);
         }
 
@@ -338,22 +329,20 @@
         }
 
         .floating-launch-btn {
-            position: absolute; 
-            top: 50%; 
-            left: 50%;
-            transform: translate(-50%, -50%);
+            position: absolute; bottom: 35px; left: 50%;
+            transform: translateX(-50%);
             background: #ffffff;
-            color: #d81b60; border: 2px solid #ff69b4; padding: 14px 32px;
-            border-radius: 25px; font-size: 15px; font-weight: bold;
-            cursor: pointer; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            color: #d81b60; border: 2px solid #ff69b4; padding: 12px 28px;
+            border-radius: 25px; font-size: 14px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
             z-index: 60; display: none;
             animation: pulseBtn 1.8s infinite;
         }
 
         @keyframes pulseBtn {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.05); }
-            100% { transform: translate(-50%, -50%) scale(1); }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         .memory-overlay {
@@ -559,43 +548,18 @@
 
     <script>
         // ==========================================================
-        // 🛠️ 1. ตั้งค่ารหัสห้องตรงนี้ (ให้ทั้งคุณและแฟนใส่รหัสห้องเดียวกัน)
+        // 🛠️ ตั้งค่าชื่อห้อง และบทบาทเครื่องนี้ (แก้ไขตรงนี้ได้เลยครับ)
         // ==========================================================
-        let currentRoom = 'golf_bow'; 
-
+        const CURRENT_ROOM = 'golf_bow'; // ชื่อห้องคู่รัก
+        const MY_ROLE = 'me';          // เครื่องคุณใส่ 'me' (แสดงป้ายชื่อ me)
+                                       // เครื่องแฟนแก้เป็น 'partner' (แสดงป้ายชื่อ U)
         // ==========================================================
-        // 🛠️ 2. ตั้งค่าเครื่องนี้ว่าเป็นใคร:
-        // 'me' = เครื่องของคุณ (ป้ายชื่อจะขึ้นว่า me หรือชื่อคุณ)
-        // 'U'  = เครื่องของแฟน (ป้ายชื่อจะขึ้นว่า U ทันที)
-        // ==========================================================
-        let myDeviceRole = 'me'; // สลับแก้เป็น 'U' ในเครื่องของแฟนได้เลยครับ!
 
-        currentRoom = currentRoom.toLowerCase().replace(/\s+/g, '_');
-        document.getElementById('roomBadge').innerText = `ห้อง: ${currentRoom} (${myDeviceRole})`;
-
-        // 3. ตั้งค่า Firebase Realtime Database ฟรี (ใช้โครงสร้างกลางเพื่อให้ลิงก์กันได้จริง)
-        const firebaseConfig = {
-            databaseURL: "https://krathong-online-default-rtdb.firebaseio.com/" // ฐานข้อมูลกลางตัวอย่าง
-        };
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const dbRef = firebase.database().ref('rooms/' + currentRoom);
-
+        const roomKey = 'saved_krathongs_' + CURRENT_ROOM;
         let photoDataList = Array(5).fill(null).map(() => ({ src: '', caption: '' }));
-        let allKrathongs = [];
+        let allKrathongs = JSON.parse(localStorage.getItem(roomKey)) || [];
 
-        // ฟังชันก์ดึงข้อมูลแบบ Realtime (ถ้าแฟนลอย เครื่องเราจะเห็นทันที)
-        dbRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            allKrathongs = [];
-            if (data) {
-                Object.keys(data).forEach(key => {
-                    allKrathongs.push({ id: key, ...data[key] });
-                });
-            }
-            renderSavedKrathongs();
-        });
+        document.getElementById('roomBadge').innerText = `ห้อง: ${CURRENT_ROOM}`;
 
         // ท้องฟ้า
         const sky = document.getElementById('sky');
@@ -636,7 +600,11 @@
             river.appendChild(bgKrathong);
         }
 
+        renderSavedKrathongs();
+
         function renderSavedKrathongs() {
+            // โหลดข้อมูลล่าสุดจากเครื่องอัตโนมัติ
+            allKrathongs = JSON.parse(localStorage.getItem(roomKey)) || [];
             const container = document.getElementById('savedKrathongsContainer');
             container.innerHTML = '';
 
@@ -646,40 +614,24 @@
                 item.style.left = `${kData.posX}%`;
                 item.style.bottom = `${kData.posY}px`;
 
+                // ถ้าเป็นของแฟน (partner) จะแสดงป้ายชื่อเป็น 'U' ทันที
+                let displayName = (kData.owner === 'partner') ? 'U' : 'me';
+
                 item.innerHTML = `
-                    <div class="saved-krathong-content">
-                        <button class="delete-krathong-btn" onclick="deleteKrathong(event, '${kData.id}')">✕</button>
-                        <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
-                            <div style="position:absolute; top:-22px; display:flex; align-items:flex-end; gap:8px; z-index:5;">
-                                <div class="candle-body" style="width:7px; height:20px;">
-                                    <div class="candle-wick"></div>
-                                    <div class="candle-flame" style="width:7px; height:11px; top:-11px;"></div>
-                                </div>
-                                <div style="display:flex; gap:2px; align-items:flex-end;">
-                                    <div style="width:2px; height:22px; background:#7a4b1e;"></div>
-                                    <div style="width:2px; height:22px; background:#7a4b1e;"></div>
-                                    <div style="width:2px; height:22px; background:#7a4b1e;"></div>
-                                </div>
-                            </div>
-                            <img src="${kData.krathongImg}" alt="กระทง">
-                        </div>
-                        <div class="tag-label">${kData.owner}</div>
-                    </div>
+                    <button class="delete-krathong-btn" onclick="deleteKrathong(event, '${kData.id}')">✕</button>
+                    <img src="${kData.krathongImg}" alt="กระทง">
+                    <div class="tag-label">${displayName}</div>
                 `;
 
                 let pressTimer;
-                const showDeleteBtn = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                const showDeleteBtn = () => {
                     const btn = item.querySelector('.delete-krathong-btn');
                     btn.style.display = 'flex';
                 };
 
-                item.addEventListener('contextmenu', (e) => e.preventDefault());
-                item.addEventListener('touchstart', (e) => { pressTimer = setTimeout(() => showDeleteBtn(e), 700); }, {passive: false});
+                item.addEventListener('touchstart', () => { pressTimer = setTimeout(showDeleteBtn, 800); });
                 item.addEventListener('touchend', () => clearTimeout(pressTimer));
-                item.addEventListener('touchmove', () => clearTimeout(pressTimer));
-                item.addEventListener('mousedown', (e) => { pressTimer = setTimeout(() => showDeleteBtn(e), 700); });
+                item.addEventListener('mousedown', () => { pressTimer = setTimeout(showDeleteBtn, 800); });
                 item.addEventListener('mouseup', () => clearTimeout(pressTimer));
 
                 item.onclick = (e) => {
@@ -694,7 +646,9 @@
         function deleteKrathong(e, id) {
             e.stopPropagation();
             if (confirm("ต้องการลบกระทงความทรงจำนี้ใช่หรือไม่?")) {
-                firebase.database().ref('rooms/' + currentRoom + '/' + id).remove();
+                allKrathongs = allKrathongs.filter(k => k.id !== id);
+                localStorage.setItem(roomKey, JSON.stringify(allKrathongs));
+                renderSavedKrathongs();
             }
         }
 
@@ -793,23 +747,24 @@
             document.addEventListener('mouseup', endDrag);
         }
 
-        // กดลอยพร้อมกัน -> ส่งข้อมูลขึ้น Cloud ทันที เครื่องแฟนจะเห็นพร้อมกัน
         function launchKrathong() {
             document.getElementById('launchBtn').style.display = 'none';
             document.getElementById('mainKrathong').style.display = 'none';
 
-            const newKrathongId = 'k_' + Date.now();
-            const newKrathongData = {
+            const newKrathong = {
+                id: 'k_' + Date.now(),
                 krathongImg: selectedKrathongImg,
                 wishText: document.getElementById('wishInput').value,
                 photos: photoDataList,
                 posX: 30 + Math.random() * 40,
                 posY: 180 + Math.random() * 80,
-                owner: myDeviceRole // จะแสดงผลเป็น 'me' หรือ 'U' ตามที่คุณตั้งค่าด้านบน
+                owner: MY_ROLE // บันทึกตามบทบาทเครื่อง (me หรือ partner)
             };
 
-            // บันทึกขึ้น Firebase Realtime Database
-            firebase.database().ref('rooms/' + currentRoom + '/' + newKrathongId).set(newKrathongData);
+            allKrathongs.push(newKrathong);
+            localStorage.setItem(roomKey, JSON.stringify(allKrathongs));
+            renderSavedKrathongs();
+            openSavedMemory(newKrathong);
         }
 
         function openSavedMemory(kData) {
@@ -866,11 +821,6 @@
             document.getElementById('fullImg').src = imgSrc;
             document.getElementById('fullCaption').innerText = capText;
             
-            // ใช้ SVG แทนภาพ placeholder ชั่วคราวกรณีรูปว่าง
-            document.getElementById('fullImg').onerror = function() {
-                this.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="220" viewBox="0 0 300 220"><rect width="300" height="220" fill="%23ffb6c1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="sans-serif" font-size="16">Love</text></svg>';
-            };
-
             const modal = document.getElementById('fullPhotoModal');
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('show'), 10);
@@ -880,7 +830,6 @@
 
         function closeFullPhoto() {
             const modal = document.getElementById('fullPhotoModal');
-            modal.classList.remove('side');
             modal.classList.remove('show');
             setTimeout(() => modal.style.display = 'none', 400);
         }
