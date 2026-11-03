@@ -42,7 +42,7 @@
         .overlay-dark {
             position: absolute;
             inset: 0;
-            background: linear-gradient(to bottom, rgba(10, 15, 30, 0.3), rgba(10, 15, 30, 0.1) 40%, rgba(10, 15, 30, 0.6));
+            background: linear-gradient(to bottom, rgba(10, 15, 30, 0.2), rgba(10, 15, 30, 0.05) 40%, rgba(10, 15, 30, 0.5));
             pointer-events: none;
         }
 
@@ -101,19 +101,20 @@
             100% { opacity: 0.8; transform: scaleY(1.05); }
         }
 
+        /* กระทงเล็กๆ ในแม่น้ำ (สุ่มตำแหน่งลอยเข้ามา ไม่ค้างซ้าย) */
         .bg-krathong {
             position: absolute; width: 22px; height: 22px;
             background-size: contain; background-repeat: no-repeat; background-position: center;
-            opacity: 0.65; animation: driftRiver linear infinite;
+            opacity: 0.7; animation: driftRiver linear infinite;
         }
 
         @keyframes driftRiver {
-            0% { transform: translateX(-20px) translateY(0px); }
-            50% { transform: translateX(180px) translateY(-4px); }
-            100% { transform: translateX(410px) translateY(0px); }
+            0% { transform: translateX(calc(-30px + var(--random-start))) translateY(0px); }
+            50% { transform: translateX(calc(150px + var(--random-start))) translateY(-4px); }
+            100% { transform: translateX(calc(430px + var(--random-start))) translateY(0px); }
         }
 
-        /* กระทงหลัก */
+        /* กระทงหลัก (จัดกึ่งกลางเป๊ะ) */
         .main-krathong-wrapper {
             position: absolute; 
             bottom: 160px; 
@@ -198,14 +199,19 @@
             100% { transform: translateY(-18px) scale(1.8); opacity: 0; }
         }
 
-        /* ตัวหนังสือคำแนะนำใต้ธูปเทียน (ไม่มีกรอบสี่เหลี่ยม) */
-        .drag-hint-text {
+        /* ข้อความคำแนะนำ (อยู่นิ่งๆ ไม่เคลื่อนตาม) */
+        .drag-hint-fixed {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
             color: #fff;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-            margin-top: 6px;
+            text-shadow: 0 1px 5px rgba(0,0,0,0.8);
             white-space: nowrap;
+            z-index: 45;
+            pointer-events: none;
             animation: pulseText 1.5s infinite;
         }
 
@@ -218,8 +224,7 @@
         .krathong-img {
             width: 170px; height: 140px; object-fit: contain;
             filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.6));
-            margin: 0 auto;
-            display: block;
+            margin: 0 auto; display: block;
         }
 
         .tag-label {
@@ -314,14 +319,21 @@
             100% { transform: translateX(-50%) scale(1); }
         }
 
-        /* หน้าจอคำอวยพรเมื่อกดกระทง (แอนิเมชันเด้งขึ้นมาอย่างสมูท) */
+        /* หน้าจอคำอวยพร (ใช้พื้นหลังเดิม เบลอ + แอนิเมชันละมุน) */
         .memory-overlay {
             position: absolute; inset: 0;
-            background: rgba(5, 10, 20, 0.85); backdrop-filter: blur(8px);
+            background-image: url('พื้นหลัง.png');
+            background-size: cover; background-position: center;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             z-index: 100; display: none; flex-direction: column;
             justify-content: center; align-items: center; padding: 20px;
-            opacity: 0; transform: scale(0.9);
-            transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0; transform: scale(0.92);
+            transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1), transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .memory-overlay::before {
+            content: ''; position: absolute; inset: 0;
+            background: rgba(10, 15, 30, 0.6); pointer-events: none;
         }
 
         .memory-overlay.show {
@@ -329,26 +341,26 @@
         }
 
         .memory-title {
-            color: #ffb6c1; font-size: 16px; font-weight: bold;
-            margin-bottom: 5px; text-shadow: 0 0 10px #ff69b4;
+            position: relative; color: #ffb6c1; font-size: 18px; font-weight: bold;
+            margin-bottom: 6px; text-shadow: 0 0 12px #ff69b4; z-index: 2;
         }
 
         .memory-wish-text {
-            color: #fff; font-size: 11px; text-align: center;
-            max-width: 80%; margin-bottom: 15px; opacity: 0.9;
-            font-style: italic; background: rgba(255,255,255,0.1);
-            padding: 6px 14px; border-radius: 12px;
+            position: relative; color: #fff; font-size: 12px; text-align: center;
+            max-width: 85%; margin-bottom: 20px; opacity: 0.95;
+            font-style: italic; background: rgba(255,255,255,0.15);
+            padding: 8px 16px; border-radius: 12px; z-index: 2;
         }
 
         .polaroid-scatter-container {
             position: relative; width: 100%; height: 380px;
-            display: flex; justify-content: center; align-items: center;
+            display: flex; justify-content: center; align-items: center; z-index: 2;
         }
 
         .polaroid-card {
             position: absolute; background: #ffffff; padding: 8px 8px 16px 8px;
-            border-radius: 4px; box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-            width: 110px; cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 115px; cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             animation: scatterIn 0.6s ease-out forwards;
         }
 
@@ -370,9 +382,9 @@
             100% { opacity: 1; }
         }
 
-        /* ป๊อปอัปขยายโพลารอยด์เต็มจอ (แตะดูซ้ำได้) */
+        /* ป๊อปอัปขยายโพลารอยด์เต็มจอ (แตะครั้งเดียวขึ้นทันที + สมูท) */
         .full-photo-modal {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.92);
+            position: absolute; inset: 0; background: rgba(0,0,0,0.85);
             z-index: 150; display: none; flex-direction: column;
             justify-content: center; align-items: center; padding: 20px;
             opacity: 0; transform: scale(0.9);
@@ -385,7 +397,7 @@
 
         .polaroid-frame-large {
             background: #ffffff; padding: 12px 12px 24px 12px;
-            border-radius: 6px; box-shadow: 0 10px 30px rgba(255,255,255,0.2);
+            border-radius: 6px; box-shadow: 0 15px 35px rgba(255,255,255,0.25);
             max-width: 85%; width: 290px; text-align: center;
         }
 
@@ -401,11 +413,30 @@
             position: absolute; top: 15px; right: 15px;
             background: rgba(255,255,255,0.2); color: #fff; border: none;
             width: 32px; height: 32px; border-radius: 50%; font-weight: bold;
-            font-size: 16px; cursor: pointer;
+            font-size: 16px; cursor: pointer; z-index: 10;
+        }
+
+        /* หัวใจและอิโมจิที่ลอยขึ้นมาเมื่อกดดูรูป */
+        .floating-heart {
+            position: absolute;
+            bottom: 50px;
+            font-size: 20px;
+            animation: floatHeartUp 2s ease-out forwards;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        @keyframes floatHeartUp {
+            0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; }
+            50% { transform: translateY(-200px) scale(1.3) rotate(20deg); opacity: 0.8; }
+            100% { transform: translateY(-400px) scale(1) rotate(-20deg); opacity: 0; }
         }
     </style>
 </head>
 <body>
+
+    <!-- เพลงประกอบ (ไฟล์ song.mp3) -->
+    <audio id="bgMusic" src="song.mp3" loop></audio>
 
     <div class="mobile-frame" id="frame">
         <div class="overlay-dark"></div>
@@ -418,14 +449,17 @@
             <div class="water-wave"></div>
         </div>
 
+        <!-- ข้อความคำแนะนำ (อยู่นิ่งๆ ไม่ตามนิ้ว) -->
+        <div class="drag-hint-fixed" id="dragHint" style="display: none;">✨ แตะลากธูปเทียนไปปักลงกระทง</div>
+
         <!-- กระทงหลัก (จัดกึ่งกลางเป๊ะ) -->
         <div class="main-krathong-wrapper" id="mainKrathong" onclick="openMemoryModal()">
             <img id="krathongDisplay" class="krathong-img" src="กระทง1.png" alt="กระทง" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3501/3501140.png'">
             <div class="tag-label" id="tagLabel">me</div>
         </div>
 
-        <!-- โมเดลธูปเทียน (ไร้กรอบ มีเพียงตัวหนังสือโชว์ด้านล่าง) -->
-        <div class="stick-container" id="draggableSticks" style="display: none; bottom: 80px; left: 50%; transform: translateX(-50%);">
+        <!-- โมเดลธูปเทียน -->
+        <div class="stick-container" id="draggableSticks" style="display: none; bottom: 90px; left: 50%; transform: translateX(-50%);">
             <div class="sticks-row">
                 <div class="candle-body">
                     <div class="candle-wick"></div>
@@ -437,7 +471,6 @@
                     <div class="incense-stick"><div class="incense-smoke"></div></div>
                 </div>
             </div>
-            <div class="drag-hint-text">✨ แตะลากธูปเทียนไปปักลงกระทง</div>
         </div>
 
         <!-- ปุ่มลอยกระทงพร้อมกัน สีขาว -->
@@ -480,7 +513,7 @@
             <div class="polaroid-scatter-container" id="scatterContainer"></div>
         </div>
 
-        <!-- ป๊อปอัปขยายโพลารอยด์เต็มจอ (แตะดูซ้ำได้) -->
+        <!-- ป๊อปอัปขยายโพลารอยด์เต็มจอ -->
         <div class="full-photo-modal" id="fullPhotoModal" onclick="closeFullPhoto()">
             <button class="close-btn" onclick="closeFullPhoto()">✕</button>
             <div class="polaroid-frame-large" onclick="event.stopPropagation()">
@@ -515,13 +548,14 @@
             sky.appendChild(fw);
         }
 
-        // 2. กระทงลอยไกลๆ
+        // 2. กระทงเล็กๆ ในแม่น้ำ (กระจายตัวลอยมา ไม่ค้างซ้าย)
         const river = document.getElementById('river');
         for (let i = 0; i < 5; i++) {
             const bgKrathong = document.createElement('div');
             bgKrathong.className = 'bg-krathong';
             bgKrathong.style.backgroundImage = `url('กระทง${(i % 9) + 1}.png')`;
             bgKrathong.style.top = `${15 + Math.random() * 65}%`;
+            bgKrathong.style.setProperty('--random-start', `${Math.random() * 150}px`);
             bgKrathong.style.animationDuration = `${10 + Math.random() * 8}s`;
             bgKrathong.style.animationDelay = `${Math.random() * 6}s`;
             river.appendChild(bgKrathong);
@@ -579,14 +613,18 @@
             document.getElementById('step3Content').style.display = step === 3 ? 'block' : 'none';
         }
 
-        // 5. พิมพ์คำอธิษฐานเสร็จสิ้น -> ซ่อนแท็บล่าง โชว์ธูปเทียน
+        // 5. พิมพ์คำอธิษฐานเสร็จสิ้น -> เล่นเพลง + ซ่อนแท็บล่าง + โชว์ธูปเทียน
         function finishWish() {
+            const audio = document.getElementById('bgMusic');
+            audio.play().catch(e => console.log("Audio play blocked:", e));
+
             document.getElementById('bottomPanel').style.transform = 'translateY(150%)';
             document.getElementById('draggableSticks').style.display = 'flex';
+            document.getElementById('dragHint').style.display = 'block';
             initDragSticks();
         }
 
-        // 6. ระบบลากธูปเทียนไปใส่กระทง (ปรับพิกัดปักลงกลางกระทงพอดี)
+        // 6. ระบบลากธูปเทียนไปใส่กระทง
         function initDragSticks() {
             const dragEl = document.getElementById('draggableSticks');
             let isDragging = false;
@@ -614,17 +652,14 @@
                 if (!isDragging) return;
                 isDragging = false;
                 
-                // นำธูปเทียนย้ายไปปักลงบนกระทงในตำแหน่งที่ต่ำลงมาพอดีสวยงาม
+                // นำธูปเทียนย้ายไปปักลงบนกระทง (ขยับขึ้นไปอีกประมาณ 1 มิลเพื่อให้พอดีสวยงาม)
                 const mainKrathong = document.getElementById('mainKrathong');
                 mainKrathong.appendChild(dragEl);
-                dragEl.style.top = '35px';
+                dragEl.style.top = '28px';
                 dragEl.style.left = '50%';
                 dragEl.style.transform = 'translateX(-50%)';
 
-                // ซ่อนข้อความคำแนะนำใต้ธูปเทียนเมื่อปักเสร็จ
-                const hintText = dragEl.querySelector('.drag-hint-text');
-                if (hintText) hintText.style.display = 'none';
-
+                document.getElementById('dragHint').style.display = 'none';
                 document.getElementById('launchBtn').style.display = 'block';
             }
 
@@ -644,7 +679,7 @@
             document.getElementById('mainKrathong').classList.add('floating');
         }
 
-        // 8. แสดงคำอวยพรเมื่อกดกระทง (แอนิเมชันเด้งขึ้นอย่างสมูท)
+        // 8. แสดงคำอวยพรเมื่อกดกระทง
         function openMemoryModal() {
             if (document.getElementById('mainKrathong').classList.contains('floating')) {
                 const wish = document.getElementById('wishInput').value;
@@ -685,10 +720,10 @@
         function closeMemoryModal() {
             const overlay = document.getElementById('memoryOverlay');
             overlay.classList.remove('show');
-            setTimeout(() => overlay.style.display = 'none', 350);
+            setTimeout(() => overlay.style.display = 'none', 400);
         }
 
-        // 9. ป๊อปอัปขยายภาพเต็มจอ (แตะดูซ้ำได้)
+        // 9. ป๊อปอัปขยายภาพเต็มจอ + หัวใจลอยขึ้นมา
         function openFullPhoto(data, index) {
             const imgSrc = data.src || 'https://via.placeholder.com/300/ffb6c1/ffffff?text=Love';
             const capText = data.caption || `ความทรงจำที่ ${index + 1}`;
@@ -699,12 +734,34 @@
             const modal = document.getElementById('fullPhotoModal');
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('show'), 10);
+
+            // เสกหัวใจและอิโมจิลอยขึ้นมาจากหน้าจอ
+            createFloatingHearts();
         }
 
         function closeFullPhoto() {
             const modal = document.getElementById('fullPhotoModal');
             modal.classList.remove('show');
             setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        // ฟังก์ชันสร้างอิโมจิหัวใจลอยขึ้นจอ
+        function createFloatingHearts() {
+            const emojis = ['🤍', '💖', '✨', '💕', '💗'];
+            const frame = document.getElementById('frame');
+            for (let i = 0; i < 8; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'floating-heart';
+                heart.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                heart.style.left = `${20 + Math.random() * 60}%`;
+                heart.style.animationDuration = `${1.5 + Math.random() * 1.5}s`;
+                heart.style.animationDelay = `${Math.random() * 0.3}s`;
+                frame.appendChild(heart);
+
+                setTimeout(() => {
+                    heart.remove();
+                }, 3000);
+            }
         }
     </script>
 </body>
