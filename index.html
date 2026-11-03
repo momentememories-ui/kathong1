@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ลอยกระทงคู่รักทางไกล 🕯️✨</title>
+    <!-- เรียกใช้งาน Firebase SDK สำหรับเชื่อมต่อฐานข้อมูลแบบเรียลไทม์ -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -24,7 +27,6 @@
             overflow: hidden;
         }
 
-        /* กรอบมือถือแนวตั้ง 9:16 */
         .mobile-frame {
             width: 100%;
             max-width: 414px;
@@ -46,7 +48,6 @@
             pointer-events: none;
         }
 
-        /* แสดงชื่อห้องมุมบนขวา */
         .room-badge {
             position: absolute;
             top: 15px; right: 15px;
@@ -60,7 +61,6 @@
             z-index: 50;
         }
 
-        /* ท้องฟ้าด้านบน 25% */
         .sky-container {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 25%;
@@ -97,7 +97,6 @@
             100% { transform: scale(2.2); opacity: 0; }
         }
 
-        /* แม่น้ำด้านล่าง 75% */
         .river-container {
             position: absolute; bottom: 0; left: 0;
             width: 100%; height: 75%;
@@ -135,12 +134,19 @@
             align-items: center;
             cursor: pointer;
             z-index: 15;
-            transition: transform 0.3s;
             animation: mainFloat 3.5s ease-in-out infinite alternate;
+            -webkit-touch-callout: none;
+        }
+
+        .saved-krathong-content {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .saved-krathong-item img {
-            width: 150px; height: 120px; object-fit: contain;
+            width: 170px; height: 140px; object-fit: contain;
             filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.6));
         }
 
@@ -154,12 +160,12 @@
 
         .delete-krathong-btn {
             position: absolute;
-            top: -10px; right: 20px;
+            top: -10px; right: 10px;
             background: #ff3b30; color: #fff;
-            border: 2px solid #fff; width: 26px; height: 26px;
-            border-radius: 50%; font-size: 14px; font-weight: bold;
+            border: 2px solid #fff; width: 28px; height: 28px;
+            border-radius: 50%; font-size: 16px; font-weight: bold;
             display: none; justify-content: center; align-items: center;
-            cursor: pointer; z-index: 25;
+            cursor: pointer; z-index: 30;
             box-shadow: 0 3px 8px rgba(0,0,0,0.4);
         }
 
@@ -332,20 +338,22 @@
         }
 
         .floating-launch-btn {
-            position: absolute; bottom: 35px; left: 50%;
-            transform: translateX(-50%);
+            position: absolute; 
+            top: 50%; 
+            left: 50%;
+            transform: translate(-50%, -50%);
             background: #ffffff;
-            color: #d81b60; border: 2px solid #ff69b4; padding: 12px 28px;
-            border-radius: 25px; font-size: 14px; font-weight: bold;
-            cursor: pointer; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            color: #d81b60; border: 2px solid #ff69b4; padding: 14px 32px;
+            border-radius: 25px; font-size: 15px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
             z-index: 60; display: none;
             animation: pulseBtn 1.8s infinite;
         }
 
         @keyframes pulseBtn {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1); }
         }
 
         .memory-overlay {
@@ -479,7 +487,6 @@
     <div class="mobile-frame" id="frame">
         <div class="overlay-dark"></div>
 
-        <!-- แสดงชื่อห้องมุมขวาบน -->
         <div class="room-badge" id="roomBadge">ห้อง: -</div>
 
         <div class="sky-container" id="sky"></div>
@@ -552,17 +559,43 @@
 
     <script>
         // ==========================================================
-        // 🛠️ ตั้งค่ารหัสห้องตรงนี้ได้เลย (เปลี่ยนชื่อให้ตรงกับลูกค้าแต่ละคู่)
+        // 🛠️ 1. ตั้งค่ารหัสห้องตรงนี้ (ให้ทั้งคุณและแฟนใส่รหัสห้องเดียวกัน)
         // ==========================================================
         let currentRoom = 'golf_bow'; 
 
+        // ==========================================================
+        // 🛠️ 2. ตั้งค่าเครื่องนี้ว่าเป็นใคร:
+        // 'me' = เครื่องของคุณ (ป้ายชื่อจะขึ้นว่า me หรือชื่อคุณ)
+        // 'U'  = เครื่องของแฟน (ป้ายชื่อจะขึ้นว่า U ทันที)
+        // ==========================================================
+        let myDeviceRole = 'me'; // สลับแก้เป็น 'U' ในเครื่องของแฟนได้เลยครับ!
 
-        // ระบบโหลดข้อมูลและตั้งค่าห้องอัตโนมัติ
         currentRoom = currentRoom.toLowerCase().replace(/\s+/g, '_');
-        document.getElementById('roomBadge').innerText = `ห้อง: ${currentRoom}`;
+        document.getElementById('roomBadge').innerText = `ห้อง: ${currentRoom} (${myDeviceRole})`;
+
+        // 3. ตั้งค่า Firebase Realtime Database ฟรี (ใช้โครงสร้างกลางเพื่อให้ลิงก์กันได้จริง)
+        const firebaseConfig = {
+            databaseURL: "https://krathong-online-default-rtdb.firebaseio.com/" // ฐานข้อมูลกลางตัวอย่าง
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const dbRef = firebase.database().ref('rooms/' + currentRoom);
 
         let photoDataList = Array(5).fill(null).map(() => ({ src: '', caption: '' }));
-        let allKrathongs = JSON.parse(localStorage.getItem('saved_krathongs_' + currentRoom)) || [];
+        let allKrathongs = [];
+
+        // ฟังชันก์ดึงข้อมูลแบบ Realtime (ถ้าแฟนลอย เครื่องเราจะเห็นทันที)
+        dbRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            allKrathongs = [];
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    allKrathongs.push({ id: key, ...data[key] });
+                });
+            }
+            renderSavedKrathongs();
+        });
 
         // ท้องฟ้า
         const sky = document.getElementById('sky');
@@ -585,7 +618,6 @@
             sky.appendChild(fw);
         }
 
-        // กระทงลอยฉากหลัง
         const river = document.getElementById('river');
         for (let i = 0; i < 5; i++) {
             const bgKrathong = document.createElement('div');
@@ -604,8 +636,6 @@
             river.appendChild(bgKrathong);
         }
 
-        renderSavedKrathongs();
-
         function renderSavedKrathongs() {
             const container = document.getElementById('savedKrathongsContainer');
             container.innerHTML = '';
@@ -617,20 +647,39 @@
                 item.style.bottom = `${kData.posY}px`;
 
                 item.innerHTML = `
-                    <button class="delete-krathong-btn" onclick="deleteKrathong(event, '${kData.id}')">✕</button>
-                    <img src="${kData.krathongImg}" alt="กระทง">
-                    <div class="tag-label">${kData.owner || 'me'}</div>
+                    <div class="saved-krathong-content">
+                        <button class="delete-krathong-btn" onclick="deleteKrathong(event, '${kData.id}')">✕</button>
+                        <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+                            <div style="position:absolute; top:-22px; display:flex; align-items:flex-end; gap:8px; z-index:5;">
+                                <div class="candle-body" style="width:7px; height:20px;">
+                                    <div class="candle-wick"></div>
+                                    <div class="candle-flame" style="width:7px; height:11px; top:-11px;"></div>
+                                </div>
+                                <div style="display:flex; gap:2px; align-items:flex-end;">
+                                    <div style="width:2px; height:22px; background:#7a4b1e;"></div>
+                                    <div style="width:2px; height:22px; background:#7a4b1e;"></div>
+                                    <div style="width:2px; height:22px; background:#7a4b1e;"></div>
+                                </div>
+                            </div>
+                            <img src="${kData.krathongImg}" alt="กระทง">
+                        </div>
+                        <div class="tag-label">${kData.owner}</div>
+                    </div>
                 `;
 
                 let pressTimer;
-                const showDeleteBtn = () => {
+                const showDeleteBtn = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     const btn = item.querySelector('.delete-krathong-btn');
                     btn.style.display = 'flex';
                 };
 
-                item.addEventListener('touchstart', () => { pressTimer = setTimeout(showDeleteBtn, 800); });
+                item.addEventListener('contextmenu', (e) => e.preventDefault());
+                item.addEventListener('touchstart', (e) => { pressTimer = setTimeout(() => showDeleteBtn(e), 700); }, {passive: false});
                 item.addEventListener('touchend', () => clearTimeout(pressTimer));
-                item.addEventListener('mousedown', () => { pressTimer = setTimeout(showDeleteBtn, 800); });
+                item.addEventListener('touchmove', () => clearTimeout(pressTimer));
+                item.addEventListener('mousedown', (e) => { pressTimer = setTimeout(() => showDeleteBtn(e), 700); });
                 item.addEventListener('mouseup', () => clearTimeout(pressTimer));
 
                 item.onclick = (e) => {
@@ -645,13 +694,10 @@
         function deleteKrathong(e, id) {
             e.stopPropagation();
             if (confirm("ต้องการลบกระทงความทรงจำนี้ใช่หรือไม่?")) {
-                allKrathongs = allKrathongs.filter(k => k.id !== id);
-                localStorage.setItem('saved_krathongs_' + currentRoom, JSON.stringify(allKrathongs));
-                renderSavedKrathongs();
+                firebase.database().ref('rooms/' + currentRoom + '/' + id).remove();
             }
         }
 
-        // เลือกกระทง
         let selectedKrathongImg = 'กระทง1.png';
         const selector = document.getElementById('selector');
         for (let i = 1; i <= 9; i++) {
@@ -668,7 +714,6 @@
             card.appendChild(img); selector.appendChild(card);
         }
 
-        // ช่องอัปโหลดรูป 5 รูป
         const photosInputList = document.getElementById('photosInputList');
         for (let i = 0; i < 5; i++) {
             const row = document.createElement('div');
@@ -748,24 +793,23 @@
             document.addEventListener('mouseup', endDrag);
         }
 
+        // กดลอยพร้อมกัน -> ส่งข้อมูลขึ้น Cloud ทันที เครื่องแฟนจะเห็นพร้อมกัน
         function launchKrathong() {
             document.getElementById('launchBtn').style.display = 'none';
             document.getElementById('mainKrathong').style.display = 'none';
 
-            const newKrathong = {
-                id: 'k_' + Date.now(),
+            const newKrathongId = 'k_' + Date.now();
+            const newKrathongData = {
                 krathongImg: selectedKrathongImg,
                 wishText: document.getElementById('wishInput').value,
                 photos: photoDataList,
                 posX: 30 + Math.random() * 40,
                 posY: 180 + Math.random() * 80,
-                owner: 'me'
+                owner: myDeviceRole // จะแสดงผลเป็น 'me' หรือ 'U' ตามที่คุณตั้งค่าด้านบน
             };
 
-            allKrathongs.push(newKrathong);
-            localStorage.setItem('saved_krathongs_' + currentRoom, JSON.stringify(allKrathongs));
-            renderSavedKrathongs();
-            openSavedMemory(newKrathong);
+            // บันทึกขึ้น Firebase Realtime Database
+            firebase.database().ref('rooms/' + currentRoom + '/' + newKrathongId).set(newKrathongData);
         }
 
         function openSavedMemory(kData) {
@@ -822,6 +866,11 @@
             document.getElementById('fullImg').src = imgSrc;
             document.getElementById('fullCaption').innerText = capText;
             
+            // ใช้ SVG แทนภาพ placeholder ชั่วคราวกรณีรูปว่าง
+            document.getElementById('fullImg').onerror = function() {
+                this.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="220" viewBox="0 0 300 220"><rect width="300" height="220" fill="%23ffb6c1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="sans-serif" font-size="16">Love</text></svg>';
+            };
+
             const modal = document.getElementById('fullPhotoModal');
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('show'), 10);
@@ -831,6 +880,7 @@
 
         function closeFullPhoto() {
             const modal = document.getElementById('fullPhotoModal');
+            modal.classList.remove('side');
             modal.classList.remove('show');
             setTimeout(() => modal.style.display = 'none', 400);
         }
