@@ -101,17 +101,17 @@
             100% { opacity: 0.8; transform: scaleY(1.05); }
         }
 
-        /* กระทงเล็กๆ ในแม่น้ำ ลอยไปทางขวาตามแม่น้ำ ไม่ค้างซ้าย */
+        /* กระทงเล็กๆ ในแม่น้ำ */
         .bg-krathong {
             position: absolute; width: 22px; height: 22px;
             background-size: contain; background-repeat: no-repeat; background-position: center;
-            opacity: 0.7; animation: driftRightRiver linear infinite;
+            opacity: 0; animation: driftRightRiver linear infinite;
         }
 
         @keyframes driftRightRiver {
             0% { transform: translate(var(--start-x), var(--start-y)) scale(0.6); opacity: 0; }
-            20% { opacity: 0.7; }
-            80% { opacity: 0.7; }
+            15% { opacity: 0.7; }
+            85% { opacity: 0.7; }
             100% { transform: translate(var(--end-x), var(--end-y)) scale(1.1); opacity: 0; }
         }
 
@@ -319,7 +319,7 @@
             100% { transform: translateX(-50%) scale(1); }
         }
 
-        /* หน้าจอคำอธิษฐาน (ทรานซิชันค่อยๆ พุ่งกระจายตัวอย่างช้าๆ นุ่มนวล) */
+        /* หน้าจอคำอธิษฐาน */
         .memory-overlay {
             position: absolute; inset: 0;
             background-image: url('พื้นหลัง.png');
@@ -345,7 +345,6 @@
             margin-bottom: 6px; text-shadow: 0 0 12px #ff69b4; z-index: 2;
         }
 
-        /* คำอธิษฐานแนวตรง ไม่เอียง */
         .memory-wish-text {
             position: relative; color: #fff; font-size: 12px; text-align: center;
             max-width: 85%; margin-bottom: 15px; opacity: 0.95;
@@ -359,20 +358,28 @@
             display: flex; justify-content: center; align-items: center; z-index: 2;
         }
 
-        /* การ์ดโพลารอยด์กระจัดกระจายแบบสุ่ม ไม่เรียงระเบียบ พุ่งออกมาช้าๆ */
+        /* การ์ดโพลารอยด์พุ่งออกมากระจายตัว พร้อมแอนิเมชันขยับดุ๊กดิ๊ก (Wiggle & Bounce) ล่อให้กด */
         .polaroid-card {
             position: absolute; background: #ffffff; padding: 8px 8px 14px 8px;
             border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             width: 110px; cursor: pointer;
             opacity: 0;
             transform: translate(0, 100px) scale(0.2) rotate(0deg);
-            transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
             transition-delay: var(--delay);
         }
 
         .polaroid-card.show {
             opacity: 1;
             transform: translate(var(--dest-x), var(--dest-y)) scale(1) rotate(var(--rot));
+            animation: cardWiggle 2.5s ease-in-out infinite;
+            animation-delay: calc(var(--delay) + 1.2s);
+        }
+
+        @keyframes cardWiggle {
+            0%, 100% { transform: translate(var(--dest-x), var(--dest-y)) scale(1) rotate(var(--rot)); }
+            25% { transform: translate(var(--dest-x), calc(var(--dest-y) - 6px)) scale(1.04) rotate(calc(var(--rot) + 3deg)); }
+            75% { transform: translate(var(--dest-x), calc(var(--dest-y) + 4px)) scale(0.98) rotate(calc(var(--rot) - 3deg)); }
         }
 
         .polaroid-card img {
@@ -385,7 +392,7 @@
             text-align: center; pointer-events: none;
         }
 
-        /* ป๊อปอัปขยายโพลารอยด์เต็มจอ (ไม่มีกรอบดำทึบ ค่อยๆ เด้งขึ้นมาอย่างสมูท) */
+        /* ป๊อปอัปขยายโพลารอยด์เต็มจอ */
         .full-photo-modal {
             position: absolute; inset: 0; 
             background: rgba(5, 10, 20, 0.65);
@@ -421,21 +428,22 @@
             font-size: 16px; cursor: pointer; z-index: 10;
         }
 
-        /* หัวใจและอิโมจิลอยขึ้นมาแนวตั้ง ช้าลงและสโลว์สมูทกว่าเดิม */
+        /* หัวใจและอิโมจิลอยขึ้น ช้ามาก ละมุนตา ไม่มองเห็นก่อนลอย */
         .floating-heart {
             position: absolute;
-            bottom: 50px;
+            bottom: -30px;
             font-size: 22px;
-            animation: floatHeartSlow 5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            opacity: 0;
+            animation: floatHeartUltraSlow 6.5s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
             pointer-events: none;
             z-index: 200;
         }
 
-        @keyframes floatHeartSlow {
+        @keyframes floatHeartUltraSlow {
             0% { transform: translateY(0) scale(0.3); opacity: 0; }
-            15% { opacity: 0.8; }
-            85% { opacity: 0.7; }
-            100% { transform: translateY(-580px) scale(1.3); opacity: 0; }
+            15% { opacity: 0.95; }
+            85% { opacity: 0.8; }
+            100% { transform: translateY(-620px) scale(1.3); opacity: 0; }
         }
     </style>
 </head>
@@ -554,25 +562,25 @@
             sky.appendChild(fw);
         }
 
-        // 2. กระทงเล็กๆ ในแม่น้ำ ลอยไปทางขวาตามแม่น้ำ ไม่ค้างซ้าย
+        // 2. กระทงเล็กๆ ในแม่น้ำ (เริ่มต้นนอกจอฝั่งซ้าย -60px ไม่ค้างคาหน้าจอ)
         const river = document.getElementById('river');
         for (let i = 0; i < 6; i++) {
             const bgKrathong = document.createElement('div');
             bgKrathong.className = 'bg-krathong';
             bgKrathong.style.backgroundImage = `url('กระทง${(i % 9) + 1}.png')`;
             
-            const startX = -50 + Math.random() * 100;
-            const startY = 50 + Math.random() * 300;
-            const endX = startX + 350 + Math.random() * 100;
-            const endY = startY + (Math.random() * 60 - 30);
+            const startX = -60 - (i * 35);
+            const startY = 60 + Math.random() * 280;
+            const endX = startX + 480 + Math.random() * 50;
+            const endY = startY + (Math.random() * 40 - 20);
 
             bgKrathong.style.setProperty('--start-x', `${startX}px`);
             bgKrathong.style.setProperty('--start-y', `${startY}px`);
             bgKrathong.style.setProperty('--end-x', `${endX}px`);
             bgKrathong.style.setProperty('--end-y', `${endY}px`);
             
-            bgKrathong.style.animationDuration = `${10 + Math.random() * 6}s`;
-            bgKrathong.style.animationDelay = `${Math.random() * 6}s`;
+            bgKrathong.style.animationDuration = `${11 + Math.random() * 5}s`;
+            bgKrathong.style.animationDelay = `${i * 2.2}s`;
             river.appendChild(bgKrathong);
         }
 
@@ -695,7 +703,7 @@
             document.getElementById('mainKrathong').classList.add('floating');
         }
 
-        // 8. แสดงคำอธิษฐานเมื่อกดกระทง (พุ่งกระจายรูปช้าๆ แบบไม่ซ้อนทับกัน)
+        // 8. แสดงคำอธิษฐานเมื่อกดกระทง
         function openMemoryModal() {
             if (document.getElementById('mainKrathong').classList.contains('floating')) {
                 const wish = document.getElementById('wishInput').value;
@@ -704,7 +712,6 @@
                 const scatterContainer = document.getElementById('scatterContainer');
                 scatterContainer.innerHTML = '';
 
-                // พิกัดกระจายตัว 5 จุดแบบกระจัดกระจาย ไม่เรียงระเบียบและไม่ทับซ้อนกัน
                 const scatterPositions = [
                     { x: -115, y: -70, r: -8, delay: 0.1 },
                     { x: 110, y: -80, r: 12, delay: 0.25 },
@@ -732,7 +739,6 @@
                     card.innerHTML = `<img src="${imgSrc}"><p>?</p>`;
                     scatterContainer.appendChild(card);
 
-                    // สั่งให้การ์ดพุ่งออกมาช้าๆ แบบสมูท
                     setTimeout(() => card.classList.add('show'), 50);
                 });
 
@@ -748,7 +754,7 @@
             setTimeout(() => overlay.style.display = 'none', 600);
         }
 
-        // 9. ป๊อปอัปขยายภาพเต็มจออย่างช้าๆ นุ่มนวล
+        // 9. ป๊อปอัปขยายภาพเต็มจอ + อิโมจิลอยสโลว์มาก
         function openFullPhoto(data) {
             const imgSrc = data.src || 'https://via.placeholder.com/300/ffb6c1/ffffff?text=Love';
             const capText = data.caption || 'ความทรงจำของเรา';
@@ -760,7 +766,6 @@
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('show'), 10);
 
-            // เสกหัวใจลอยขึ้นมาแนวตั้ง ช้าลงและสโลว์กว่าเดิม
             createFloatingHearts();
         }
 
@@ -770,23 +775,22 @@
             setTimeout(() => modal.style.display = 'none', 400);
         }
 
-        // ฟังก์ชันสร้างอิโมจิหัวใจลอยขึ้นแนวตั้ง ช้าและสโลว์สมูท
         function createFloatingHearts() {
             const emojis = ['❤️', '💖', '✨', '💕', '🌹', '✨', '💗', '🥰'];
             const frame = document.getElementById('frame');
-            for (let i = 0; i < 9; i++) {
+            for (let i = 0; i < 8; i++) {
                 const heart = document.createElement('div');
                 heart.className = 'floating-heart';
                 heart.innerText = emojis[Math.floor(Math.random() * emojis.length)];
                 
                 heart.style.left = `${15 + Math.random() * 70}%`;
-                heart.style.animationDuration = `${4 + Math.random() * 2}s`;
-                heart.style.animationDelay = `${Math.random() * 0.5}s`;
+                heart.style.animationDuration = `${6 + Math.random() * 2}s`;
+                heart.style.animationDelay = `${Math.random() * 0.6}s`;
                 frame.appendChild(heart);
 
                 setTimeout(() => {
                     heart.remove();
-                }, 6000);
+                }, 8000);
             }
         }
     </script>
