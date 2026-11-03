@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ลอยกระทงคู่รักทางไกล 🕯️✨</title>
     
-    <!-- โหลดไลบรารี Realtime Database (JSONBin Cloud) สำหรับซิงค์ข้อมูลทั้งสองเครื่อง -->
+    <!-- โหลดไลบรารี Realtime Database -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
@@ -132,7 +132,7 @@
             100% { transform: translate(var(--end-x), var(--end-y)) scale(1.1); opacity: 0; }
         }
 
-        /* กระทงที่ลอยบนผิวน้ำพร้อมธูปเทียนและป้ายชื่อ */
+        /* กระทงที่ลอยบนแม่น้ำพร้อมธูปเทียนปักและป้ายชื่อ */
         .saved-krathong-item {
             position: absolute;
             display: flex;
@@ -157,7 +157,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
-        /* กระทงหลักตอนสร้าง */
         .main-krathong-wrapper {
             position: absolute; 
             bottom: 160px; 
@@ -326,7 +325,7 @@
             box-shadow: 0 3px 10px rgba(255, 20, 147, 0.3);
         }
 
-        /* ปุ่มลอยกระทงปรับมาอยู่กึ่งกลางหน้าจอ */
+        /* ปุ่มลอยกระทงอยู่กึ่งกลางหน้าจอ */
         .floating-launch-btn {
             position: absolute; bottom: 45%; left: 50%;
             transform: translateX(-50%);
@@ -504,7 +503,7 @@
             </div>
         </div>
 
-        <!-- ปุ่มลอยกระทงตรงกลาง -->
+        <!-- ปุ่มลอยกระทงอยู่ตรงกลางจอ -->
         <button class="floating-launch-btn" id="launchBtn" onclick="launchKrathong()">ลอยพร้อมกัน ✨</button>
 
         <div class="bottom-panel" id="bottomPanel">
@@ -612,7 +611,7 @@
             bgKrathong.style.setProperty('--start-x', `${startX}px`);
             bgKrathong.style.setProperty('--start-y', `${startY}px`);
             bgKrathong.style.setProperty('--end-x', `${endX}px`);
-            bgKrathong.style.setProperty('--end-y`, `${endY}px`);
+            bgKrathong.style.setProperty('--end-y', `${endY}px`);
             bgKrathong.style.animationDuration = `${12 + Math.random() * 4}s`;
             bgKrathong.style.animationDelay = `${i * 2.5}s`;
             river.appendChild(bgKrathong);
@@ -664,6 +663,7 @@
             });
         }
 
+        // ระบบเลือกกระทง 9 รูปแบบ
         let selectedKrathongImg = 'กระทง1.png';
         const selector = document.getElementById('selector');
         for (let i = 1; i <= 9; i++) {
@@ -680,6 +680,7 @@
             card.appendChild(img); selector.appendChild(card);
         }
 
+        // ช่องอัปโหลดรูป 5 รูป
         const photosInputList = document.getElementById('photosInputList');
         for (let i = 0; i < 5; i++) {
             const row = document.createElement('div');
@@ -759,7 +760,7 @@
             document.addEventListener('mouseup', endDrag);
         }
 
-        // เมื่อกดลบบันทึกข้อมูลขึ้นระบบคลาวด์ กระจายตำแหน่งทั่วแม่น้ำ และไม่เด้งเปิดหน้าความทรงจำทันที
+        // เมื่อกดลอย กระจายตำแหน่งทั่วแม่น้ำ และไม่เด้งเปิดหน้าความทรงจำทันที
         function launchKrathong() {
             document.getElementById('launchBtn').style.display = 'none';
             document.getElementById('mainKrathong').style.display = 'none';
