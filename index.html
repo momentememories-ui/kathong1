@@ -24,7 +24,7 @@
             overflow: hidden;
         }
 
-        /* กรอบมือถือ 9:16 */
+        /* กรอบมือถือแนวตั้ง 9:16 */
         .mobile-frame {
             width: 100%;
             max-width: 414px;
@@ -46,7 +46,7 @@
             pointer-events: none;
         }
 
-        /* ท้องฟ้า 25% ด้านบน (โคมลอย + พลุ) */
+        /* ท้องฟ้าด้านบน 25% (โคมลอย + พลุ) */
         .sky-container {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 25%;
@@ -118,7 +118,7 @@
             position: absolute; bottom: 150px; left: 50%;
             transform: translateX(-50%);
             display: flex; flex-direction: column; align-items: center;
-            transition: all 1s ease; z-index: 10; cursor: pointer;
+            transition: bottom 1s ease, transform 1s ease; z-index: 10; cursor: pointer;
         }
 
         .main-krathong-wrapper.floating {
@@ -131,23 +131,22 @@
             100% { transform: translateX(-50%) translateY(-10px) rotate(1deg); }
         }
 
-        /* โมเดลธูปเทียนสมจริง (พร้อมแท่งเทียน+เปลวไฟ+ธูป+ควัน) */
+        /* โมเดลธูปเทียนสำหรับลากไปวาง */
         .stick-container {
-            position: absolute; top: 15px;
+            position: absolute;
             display: flex; align-items: flex-end; gap: 8px;
-            z-index: 12; touch-action: none;
+            z-index: 50; touch-action: none; cursor: grab;
         }
 
         .candle-body {
-            width: 8px; height: 24px;
-            background: linear-gradient(to right, #ffb6c1, #fff, #ffb6c1);
-            border-radius: 2px 2px 0 0;
-            position: relative;
-            box-shadow: 0 0 5px rgba(255, 182, 193, 0.5);
+            width: 9px; height: 26px;
+            background: linear-gradient(to right, #ffc0cb, #ffffff, #ffb6c1);
+            border-radius: 3px 3px 0 0; position: relative;
+            box-shadow: 0 0 6px rgba(255, 182, 193, 0.6);
         }
 
         .candle-wick {
-            position: absolute; top: -4px; left: 3.5px;
+            position: absolute; top: -4px; left: 4px;
             width: 1px; height: 4px; background: #333;
         }
 
@@ -170,7 +169,7 @@
         }
 
         .incense-stick {
-            width: 2px; height: 26px; background: #7a4b1e; position: relative;
+            width: 2px; height: 28px; background: #7a4b1e; position: relative;
         }
 
         .incense-smoke {
@@ -186,7 +185,7 @@
         }
 
         .krathong-img {
-            width: 165px; height: 135px; object-fit: contain;
+            width: 170px; height: 140px; object-fit: contain;
             filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.6));
         }
 
@@ -264,15 +263,15 @@
             box-shadow: 0 3px 10px rgba(255, 20, 147, 0.3);
         }
 
-        /* ปุ่มลอยกระทงแบบเดี่ยว ลอยเด่นสวยงาม */
+        /* ปุ่มลอยกระทงพร้อมกัน */
         .floating-launch-btn {
-            position: absolute; bottom: 30px; left: 50%;
+            position: absolute; bottom: 35px; left: 50%;
             transform: translateX(-50%);
             background: linear-gradient(135deg, #ff69b4, #ff1493);
             color: #fff; border: 2px solid #fff; padding: 12px 28px;
             border-radius: 25px; font-size: 14px; font-weight: bold;
             cursor: pointer; box-shadow: 0 6px 20px rgba(255, 20, 147, 0.5);
-            z-index: 30; display: none; text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            z-index: 60; display: none; text-shadow: 0 1px 3px rgba(0,0,0,0.3);
             animation: pulseBtn 1.8s infinite;
         }
 
@@ -282,7 +281,17 @@
             100% { transform: translateX(-50%) scale(1); }
         }
 
-        /* ระบบกระจายรูปโพลารอยด์ความทรงจำเมื่อกดกระทง */
+        /* คำแนะนำให้ลากธูปเทียน */
+        .drag-hint {
+            position: absolute; bottom: 40px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7); border: 1px solid #ffb6c1;
+            color: #fff; padding: 8px 18px; border-radius: 20px;
+            font-size: 12px; font-weight: bold; z-index: 40;
+            display: none; animation: fadeIn 0.5s ease;
+        }
+
+        /* หน้าจอโพลารอยด์ความทรงจำเมื่อกดกระทง */
         .memory-overlay {
             position: absolute; inset: 0;
             background: rgba(5, 10, 20, 0.85); backdrop-filter: blur(8px);
@@ -302,7 +311,6 @@
             padding: 6px 14px; border-radius: 12px;
         }
 
-        /* การกระจายการ์ดโพลารอยด์ */
         .polaroid-scatter-container {
             position: relative; width: 100%; height: 380px;
             display: flex; justify-content: center; align-items: center;
@@ -333,7 +341,7 @@
             100% { opacity: 1; }
         }
 
-        /* ป๊อปอัปขยายภาพโพลารอยด์เต็มจอ */
+        /* ป๊อปอัปรูปโพลารอยด์ขยายใหญ่เต็มจอ */
         .full-photo-modal {
             position: absolute; inset: 0; background: rgba(0,0,0,0.92);
             z-index: 150; display: none; flex-direction: column;
@@ -373,55 +381,57 @@
     <div class="mobile-frame" id="frame">
         <div class="overlay-dark"></div>
 
-        <!-- ท้องฟ้าด้านบน 25% -->
+        <!-- ท้องฟ้า 25% ด้านบน -->
         <div class="sky-container" id="sky"></div>
 
-        <!-- แม่น้ำด้านล่าง 75% -->
+        <!-- แม่น้ำ 75% ด้านล่าง -->
         <div class="river-container" id="river">
             <div class="water-wave"></div>
         </div>
 
+        <!-- ข้อความแนะนำให้ลากธูปเทียน -->
+        <div class="drag-hint" id="dragHint">✨ แตะลากธูปเทียนไปปักลงบนกระทง</div>
+
         <!-- กระทงหลัก -->
         <div class="main-krathong-wrapper" id="mainKrathong" onclick="openMemoryModal()">
-            <!-- ธูปเทียนที่เตรียมไว้ให้ลาก -->
-            <div class="stick-container" id="dragSticks" style="top: 15px;">
-                <div class="candle-body">
-                    <div class="candle-wick"></div>
-                    <div class="candle-flame"></div>
-                </div>
-                <div class="incense-group">
-                    <div class="incense-stick"><div class="incense-smoke"></div></div>
-                    <div class="incense-stick"><div class="incense-smoke"></div></div>
-                    <div class="incense-stick"><div class="incense-smoke"></div></div>
-                </div>
-            </div>
-
             <img id="krathongDisplay" class="krathong-img" src="กระทง1.png" alt="กระทง" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3501/3501140.png'">
-            
             <div class="tag-label" id="tagLabel">me</div>
         </div>
 
-        <!-- ปุ่มลอยกระทงเดี่ยวๆ ที่ปรากฏหลังปักธูปเทียนเสร็จ -->
-        <button class="floating-launch-btn" id="launchBtn" onclick="launchKrathong()">พร้อมลอยกระทงร่วมกัน ✨</button>
+        <!-- โมเดลธูปเทียน (ซ่อนอยู่ตอนเริ่ม จะปรากฏเมื่อพิมพ์คำอธิษฐานเสร็จ) -->
+        <div class="stick-container" id="draggableSticks" style="display: none; bottom: 80px; left: 50%; transform: translateX(-50%);">
+            <div class="candle-body">
+                <div class="candle-wick"></div>
+                <div class="candle-flame"></div>
+            </div>
+            <div class="incense-group">
+                <div class="incense-stick"><div class="incense-smoke"></div></div>
+                <div class="incense-stick"><div class="incense-smoke"></div></div>
+                <div class="incense-stick"><div class="incense-smoke"></div></div>
+            </div>
+        </div>
+
+        <!-- ปุ่มลอยกระทงพร้อมกัน -->
+        <button class="floating-launch-btn" id="launchBtn" onclick="launchKrathong()">ลอยพร้อมกัน ✨</button>
 
         <!-- แท็บควบคุมล่างสุด (สีขาว-ชมพู) -->
         <div class="bottom-panel" id="bottomPanel">
             
-            <!-- สเต็ป 1: เลือกกระทง -->
+            <!-- ขั้นตอนที่ 1: เลือกกระทง -->
             <div id="step1Content">
                 <div class="panel-title">เลือกกระทงสวยๆ 🌸</div>
                 <div class="krathong-selector" id="selector"></div>
                 <button class="btn-primary" onclick="goToStep(2)">ถัดไป: ใส่รูปความทรงจำ (5 รูป) 📸</button>
             </div>
 
-            <!-- สเต็ป 2: อัปโหลดรูปความทรงจำ 5 รูป -->
+            <!-- ขั้นตอนที่ 2: อัปโหลดรูปความทรงจำ 5 รูป -->
             <div id="step2Content" style="display: none;">
                 <div class="panel-title">อัปโหลดรูปภาพความทรงจำ 5 รูป 💕</div>
                 <div class="photos-input-list" id="photosInputList"></div>
                 <button class="btn-primary" onclick="goToStep(3)">ถัดไป: คำอธิษฐาน ✨</button>
             </div>
 
-            <!-- สเต็ป 3: พิมพ์คำอธิษฐาน -->
+            <!-- ขั้นตอนที่ 3: พิมพ์คำอธิษฐาน -->
             <div id="step3Content" style="display: none;">
                 <div class="panel-title">เขียนคำอธิษฐานของเราสองคน 💌</div>
                 <div class="form-group">
@@ -438,12 +448,10 @@
             <div class="memory-title">ความทรงจำของเรา ❤️</div>
             <div class="memory-wish-text" id="displayWishText">"ขอให้เรามีความสุข รักกันนานๆ..."</div>
             
-            <div class="polaroid-scatter-container" id="scatterContainer">
-                <!-- การ์ดโพลารอยด์ 5 ใบจะสร้างผ่าน JS -->
-            </div>
+            <div class="polaroid-scatter-container" id="scatterContainer"></div>
         </div>
 
-        <!-- ป๊อปอัปขยายโพลารอยด์ขยายใหญ่เต็มจอ -->
+        <!-- ป๊อปอัปขยายโพลารอยด์เต็มจอ -->
         <div class="full-photo-modal" id="fullPhotoModal">
             <button class="close-btn" onclick="closeFullPhoto()">✕</button>
             <div class="polaroid-frame-large">
@@ -457,7 +465,7 @@
     <script>
         const photoDataList = Array(5).fill(null).map(() => ({ src: '', caption: '' }));
 
-        // 1. โคมลอย + พลุ
+        // 1. ท้องฟ้า (โคมลอย + พลุ)
         const sky = document.getElementById('sky');
         for (let i = 0; i < 10; i++) {
             const lantern = document.createElement('div');
@@ -490,7 +498,7 @@
             river.appendChild(bgKrathong);
         }
 
-        // 3. สร้างแถบเลือกกระทง 9 แบบ
+        // 3. รายการเลือกกระทง 9 แบบ
         const selector = document.getElementById('selector');
         for (let i = 1; i <= 9; i++) {
             const card = document.createElement('div');
@@ -508,7 +516,7 @@
             document.getElementById('krathongDisplay').src = `กระทง${index}.png`;
         }
 
-        // 4. สร้างช่องอัปโหลดรูป 5 รูป
+        // 4. ช่องอัปโหลดรูป 5 รูป
         const photosInputList = document.getElementById('photosInputList');
         for (let i = 0; i < 5; i++) {
             const row = document.createElement('div');
@@ -542,40 +550,51 @@
             document.getElementById('step3Content').style.display = step === 3 ? 'block' : 'none';
         }
 
-        // 5. พิมพ์คำอธิษฐานเสร็จสิ้น -> เปิดระบบลากธูปเทียนบนกระทงโดยตรง
+        // 5. พิมพ์คำอธิษฐานเสร็จสิ้น -> ปิดแท็บล่าง แล้วโชว์ธูปเทียนให้ลาก
         function finishWish() {
-            // ซ่อนแท็บล่างสุดทันที
             document.getElementById('bottomPanel').style.transform = 'translateY(150%)';
-            initDirectDragSticks();
+            document.getElementById('draggableSticks').style.display = 'flex';
+            document.getElementById('dragHint').style.display = 'block';
+            initDragSticks();
         }
 
-        // 6. ระบบลากธูปเทียนบนกระทง (ไม่มีแถบกั้น จับสะดวก)
-        function initDirectDragSticks() {
-            const dragEl = document.getElementById('dragSticks');
+        // 6. ระบบลากธูปเทียนไปใส่กระทง
+        function initDragSticks() {
+            const dragEl = document.getElementById('draggableSticks');
             let isDragging = false;
 
             function startDrag(e) {
                 isDragging = true;
-                e.stopPropagation();
+                e.preventDefault();
             }
 
             function moveDrag(e) {
                 if (!isDragging) return;
                 const touch = e.touches ? e.touches[0] : e;
-                const krathongRect = document.getElementById('mainKrathong').getBoundingClientRect();
+                const frameRect = document.getElementById('frame').getBoundingClientRect();
                 
-                // ให้ลากธูปเทียนขยับตามนิ้วมือ
-                let newLeft = touch.clientX - krathongRect.left - 20;
-                let newTop = touch.clientY - krathongRect.top - 20;
+                let newX = touch.clientX - frameRect.left;
+                let newY = touch.clientY - frameRect.top;
 
-                dragEl.style.left = `${newLeft}px`;
-                dragEl.style.top = `${newTop}px`;
+                dragEl.style.left = `${newX}px`;
+                dragEl.style.top = `${newY}px`;
+                dragEl.style.bottom = 'auto';
+                dragEl.style.transform = 'translate(-50%, -50%)';
             }
 
             function endDrag() {
                 if (!isDragging) return;
                 isDragging = false;
-                // ปักธูปเทียนเสร็จ -> แสดงปุ่มลอยกระทงเดี่ยวๆ
+                
+                // เมื่อลากเสร็จ ปรับธูปเทียนให้เข้าไปอยู่ในองค์ประกอบกระทง
+                const mainKrathong = document.getElementById('mainKrathong');
+                mainKrathong.appendChild(dragEl);
+                dragEl.style.top = '15px';
+                dragEl.style.left = '50%';
+                dragEl.style.transform = 'translateX(-50%)';
+
+                // ซ่อนคำแนะนำ แสดงปุ่มลอยพร้อมกัน
+                document.getElementById('dragHint').style.display = 'none';
                 document.getElementById('launchBtn').style.display = 'block';
             }
 
@@ -588,14 +607,14 @@
             document.addEventListener('mouseup', endDrag);
         }
 
-        // 7. ลอยกระทงร่วมกัน
+        // 7. กดปุ่มลอยพร้อมกัน
         function launchKrathong() {
             document.getElementById('launchBtn').style.display = 'none';
             document.getElementById('tagLabel').style.display = 'inline-block';
             document.getElementById('mainKrathong').classList.add('floating');
         }
 
-        // 8. แสดงภาพโพลารอยด์กระจายตัวอย่างทันสมัยเมื่อกดกระทง
+        // 8. แสดงความทรงจำเมื่อกดกระทง
         function openMemoryModal() {
             if (document.getElementById('mainKrathong').classList.contains('floating')) {
                 const wish = document.getElementById('wishInput').value;
@@ -604,7 +623,6 @@
                 const scatterContainer = document.getElementById('scatterContainer');
                 scatterContainer.innerHTML = '';
 
-                // ค่าองศาและตำแหน่งกระจายตัว 5 จุด
                 const transforms = [
                     { x: -90, y: -80, r: -12 },
                     { x: 80, y: -70, r: 10 },
@@ -636,7 +654,7 @@
             document.getElementById('memoryOverlay').style.display = 'none';
         }
 
-        // 9. ป๊อปอัปโพลารอยด์ขยายใหญ่เต็มจอ
+        // 9. ป๊อปอัปขยายภาพเต็มจอ
         function openFullPhoto(data, index) {
             const imgSrc = data.src || 'https://via.placeholder.com/300/ffb6c1/ffffff?text=Love';
             const capText = data.caption || `ความทรงจำที่ ${index + 1}`;
