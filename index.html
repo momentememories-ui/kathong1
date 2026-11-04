@@ -313,7 +313,7 @@
             100% { transform: translateX(-50%) scale(1); }
         }
 
-        /* ป๊อปอัป QR Code ให้แฟนสแกน */
+        /* ป๊อปอัป QR Code */
         .qrcode-modal {
             position: absolute; inset: 0;
             background: rgba(5, 10, 20, 0.85);
@@ -342,7 +342,7 @@
             border: 2px solid #ffd1dc;
             display: inline-block;
         }
-        #qrcode img {
+        #qrcode img, #qrcode canvas {
             display: block;
             margin: 0 auto;
         }
@@ -493,7 +493,7 @@
 
         <div class="drag-hint-fixed" id="dragHint" style="display: none;">✨ แตะลากธูปเทียนไปปักลงกระทง</div>
 
-        <!-- กระทงหลัก (เอาคำว่า me ออกแล้ว) -->
+        <!-- กระทงหลัก -->
         <div class="main-krathong-wrapper" id="mainKrathong" onclick="openMemoryModal()">
             <img id="krathongDisplay" class="krathong-img" src="กระทง1.png" alt="กระทง" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3501/3501140.png'">
         </div>
@@ -691,22 +691,13 @@
         function uploadPhoto(event, index) {
             const file = event.target.files[0];
             if (file) {
-                const img = new Image();
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    img.src = e.target.result;
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        canvas.width = 100;
-                        canvas.height = 100;
-                        ctx.drawImage(img, 0, 0, 100, 100);
-                        photoDataList[index].src = canvas.toDataURL('image/jpeg', 0.5);
-                        
-                        document.getElementById(`upBtn${index}`).style.background = '#e8f5e9';
-                        document.getElementById(`upBtn${index}`).style.color = '#2e7d32';
-                        document.getElementById(`upBtn${index}`).innerText = `✓ รูปที่ ${index + 1}`;
-                    }
+                    // ใช้ไฟล์ต้นฉบับเต็มความละเอียด ไม่มีการบีบอัด ไม่แตก
+                    photoDataList[index].src = e.target.result;
+                    document.getElementById(`upBtn${index}`).style.background = '#e8f5e9';
+                    document.getElementById(`upBtn${index}`).style.color = '#2e7d32';
+                    document.getElementById(`upBtn${index}`).innerText = `✓ รูปที่ ${index + 1}`;
                 }
                 reader.readAsDataURL(file);
             }
@@ -787,10 +778,14 @@
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = '';
             
+            // สร้าง QR Code ขนาดพอดี สแกนติดง่าย
             new QRCode(qrContainer, {
                 text: shareUrl,
-                width: 160,
-                height: 160
+                width: 180,
+                height: 180,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
             });
 
             const modal = document.getElementById('qrModal');
