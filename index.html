@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ลอยกระทงกับเธอ 🕯️✨</title>
+    <title>ลอยกระทงคู่รักทางไกล 🕯️✨</title>
     <!-- โหลดไลบรารี QRCode -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -495,7 +495,7 @@
 
         <!-- กระทงหลัก -->
         <div class="main-krathong-wrapper" id="mainKrathong" onclick="openMemoryModal()">
-            <img id="krathongDisplay" class="krathong-img" src="กระทง1.png" alt="กระทง" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3501/3501140.png'">
+            <img id="krathongDisplay" class="krathong-img" alt="กระทง" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3501/3501140.png'">
         </div>
 
         <!-- โมเดลธูปเทียน -->
@@ -514,7 +514,7 @@
         </div>
 
         <!-- ปุ่มลอยกระทงสีขาว -->
-        <button class="floating-launch-btn" id="launchBtn" onclick="launchKrathong()">กดเพื่อลอยกระทง ✨</button>
+        <button class="floating-launch-btn" id="launchBtn" onclick="launchKrathong()">ลอยพร้อมกัน ✨</button>
 
         <!-- แท็บควบคุมล่างสุด -->
         <div class="bottom-panel" id="bottomPanel">
@@ -575,25 +575,69 @@
         let selectedKrathongIndex = 1;
         const photoDataList = Array(5).fill(null).map(() => ({ src: '', caption: '' }));
 
-        window.addEventListener('DOMContentLoaded', () => {
+        // ระบบฐานข้อมูล IndexedDB สำหรับเก็บไฟล์ภาพทุกนามสกุล ขนาดเต็ม 100% ไม่บีบอัด
+        const dbName = "KrathongLoveDB";
+        const storeName = "krathongStore";
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(dbName, 1);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(storeName)) {
+                        db.createObjectStore(storeName, { keyPath: "id" });
+                    }
+                };
+            });
+        }
+
+        async function saveToDB(id, data) {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(storeName, "readwrite");
+                const store = transaction.objectStore(storeName);
+                const request = store.put({ id: id, payload: data });
+                request.onsuccess = () => resolve(true);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function getFromDB(id) {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(storeName, "readonly");
+                const store = transaction.objectStore(storeName);
+                const request = store.get(id);
+                request.onsuccess = () => resolve(request.result ? request.result.payload : null);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // โหลดข้อมูลเมื่อเปิดจาก QR Code ของแฟน
+        window.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const dataParam = urlParams.get('data');
+            const kid = urlParams.get('kid');
             
-            if (dataParam) {
+            if (kid) {
                 try {
-                    const parsedData = JSON.parse(decodeURIComponent(escape(atob(dataParam))));
-                    
-                    selectedKrathongIndex = parsedData.k || 1;
-                    document.getElementById('krathongDisplay').src = `กระทง${selectedKrathongIndex}.png`;
-                    document.getElementById('wishInput').value = parsedData.w || '';
-                    
-                    if (parsedData.p && Array.isArray(parsedData.p)) {
-                        parsedData.p.forEach((item, idx) => {
-                            if (photoDataList[idx]) {
-                                photoDataList[idx].src = item.s || '';
-                                photoDataList[idx].caption = item.c || '';
-                            }
-                        });
+                    const savedData = await getFromDB(kid);
+                    if (savedData) {
+                        selectedKrathongIndex = savedData.k || 1;
+                        document.getElementById('krathongDisplay').src = `กระทง${selectedKrathongIndex}.png`;
+                        document.getElementById('wishInput').value = savedData.w || '';
+                        
+                        if (savedData.p && Array.isArray(savedData.p)) {
+                            savedData.p.forEach((item, idx) => {
+                                if (photoDataList[idx]) {
+                                    photoDataList[idx].src = item.s || '';
+                                    photoDataList[idx].caption = item.c || '';
+                                }
+                            });
+                        }
+                    } else {
+                        document.getElementById('krathongDisplay').src = `กระทง1.png`;
                     }
 
                     document.getElementById('bottomPanel').style.display = 'none';
@@ -611,8 +655,10 @@
                     audio.play().catch(e => console.log(e));
 
                 } catch (e) {
-                    console.error("Parse data failed", e);
+                    console.error("Load DB failed", e);
                 }
+            } else {
+                document.getElementById('krathongDisplay').src = `กระทง1.png`;
             }
         });
 
@@ -688,45 +734,16 @@
             photosInputList.appendChild(row);
         }
 
-        // ระบบบีบอัดรูปภาพอัจฉริยะ (Smart Compression) เพื่อให้ QR Code โหลดติด 100% แต่รูปยังคมชัดสวยงาม ไม่แตก
+        // รองรับไฟล์รูปภาพทุกประเภท ความละเอียดเดิม 100% ไม่บีบอัด ไม่แตก
         function uploadPhoto(event, index) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        
-                        // ควบคุมขนาดสูงสุดเพื่อไม่ให้ลิงก์ยาวเกินไปจน QR Code พัง แต่ยังคงความชัด
-                        const MAX_SIZE = 400;
-                        if (width > height) {
-                            if (width > MAX_SIZE) {
-                                height *= MAX_SIZE / width;
-                                width = MAX_SIZE;
-                            }
-                        } else {
-                            if (height > MAX_SIZE) {
-                                width *= MAX_SIZE / height;
-                                height = MAX_SIZE;
-                            }
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        // แปลงเป็น JPEG คุณภาพสูง
-                        photoDataList[index].src = canvas.toDataURL('image/jpeg', 0.75);
-
-                        document.getElementById(`upBtn${index}`).style.background = '#e8f5e9';
-                        document.getElementById(`upBtn${index}`).style.color = '#2e7d32';
-                        document.getElementById(`upBtn${index}`).innerText = `✓ รูปที่ ${index + 1}`;
-                    }
+                    photoDataList[index].src = e.target.result;
+                    document.getElementById(`upBtn${index}`).style.background = '#e8f5e9';
+                    document.getElementById(`upBtn${index}`).style.color = '#2e7d32';
+                    document.getElementById(`upBtn${index}`).innerText = `✓ รูปที่ ${index + 1}`;
                 }
                 reader.readAsDataURL(file);
             }
@@ -791,9 +808,12 @@
             document.addEventListener('mouseup', endDrag);
         }
 
-        function launchKrathong() {
+        async function launchKrathong() {
             document.getElementById('launchBtn').style.display = 'none';
             document.getElementById('mainKrathong').classList.add('floating');
+
+            // สร้างรหัสประจำตัวกระทงแบบสุ่มไม่ซ้ำกัน
+            const kid = 'k_' + Math.random().toString(36).substring(2, 9);
 
             const krathongData = {
                 k: selectedKrathongIndex,
@@ -801,20 +821,22 @@
                 p: photoDataList.map(item => ({ s: item.src, c: item.caption }))
             };
 
-            const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(krathongData))));
-            const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
+            // บันทึกข้อมูลลงในระบบฐานข้อมูลเบราว์เซอร์
+            await saveToDB(kid, krathongData);
+
+            const shareUrl = `${window.location.origin}${window.location.pathname}?kid=${kid}`;
 
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = '';
             
-            // สร้าง QR Code ขนาดกำลังพอดี อ่านง่าย สแกนติดทันที
+            // สร้าง QR Code จากลิงก์สั้นๆ (รหัส ID) ทำให้ QR Code ขึ้นชัวร์ 100% สแกนง่ายมาก
             new QRCode(qrContainer, {
                 text: shareUrl,
                 width: 170,
                 height: 170,
                 colorDark: "#000000",
                 colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.L // ใช้ระดับ L ช่วยให้ข้อมูลขนาดใหญ่สร้าง QR Code ได้สำเร็จและขึ้นชัวร์ 100%
+                correctLevel: QRCode.CorrectLevel.M
             });
 
             const modal = document.getElementById('qrModal');
@@ -899,7 +921,7 @@
         }
 
         function createFloatingHearts() {
-            const emojis = ['💖', '✨', '💕', '🤍' , '💗'];
+            const emojis = ['❤️', '💖', '✨', '💕', '🌹', '✨', '💗', '🥰'];
             const frame = document.getElementById('frame');
             for (let i = 0; i < 8; i++) {
                 const heart = document.createElement('div');
