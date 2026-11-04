@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ลอยกระทงกับเธอ 🕯️✨</title>
-    <!-- โหลดไลบรารีสำหรับเจน QR Code -->
+    <!-- โหลดไลบรารี QRCode -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * {
@@ -229,14 +229,6 @@
             margin: 0 auto; display: block;
         }
 
-        .tag-label {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #ff69b4; color: #d81b60;
-            padding: 3px 14px; border-radius: 12px;
-            font-size: 11px; font-weight: bold; margin-top: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: none;
-        }
-
         /* แท็บล่างสุดสีขาว-ชมพู */
         .bottom-panel {
             position: absolute; bottom: 12px; left: 12px; right: 12px;
@@ -342,7 +334,18 @@
 
         .qrcode-box h3 { color: #d81b60; font-size: 16px; margin-bottom: 6px; }
         .qrcode-box p { color: #666; font-size: 12px; margin-bottom: 16px; }
-        #qrcode { padding: 10px; background: #fff; border-radius: 10px; border: 2px solid #ffd1dc; }
+        
+        #qrcode { 
+            padding: 10px; 
+            background: #fff; 
+            border-radius: 10px; 
+            border: 2px solid #ffd1dc;
+            display: inline-block;
+        }
+        #qrcode img {
+            display: block;
+            margin: 0 auto;
+        }
 
         .btn-secondary {
             margin-top: 16px; background: #fff0f5; color: #d81b60; border: 1px solid #ff69b4;
@@ -470,7 +473,7 @@
         @keyframes floatHeartUltraSlow {
             0% { transform: translateY(0) scale(0.3); opacity: 0; }
             15% { opacity: 0.95; }
-            85% { opacity: 0.7; }
+            85% { opacity: 0.8; }
             100% { transform: translateY(-620px) scale(1.3); opacity: 0; }
         }
     </style>
@@ -490,10 +493,9 @@
 
         <div class="drag-hint-fixed" id="dragHint" style="display: none;">✨ แตะลากธูปเทียนไปปักลงกระทง</div>
 
-        <!-- กระทงหลัก -->
+        <!-- กระทงหลัก (เอาคำว่า me ออกแล้ว) -->
         <div class="main-krathong-wrapper" id="mainKrathong" onclick="openMemoryModal()">
             <img id="krathongDisplay" class="krathong-img" src="กระทง1.png" alt="กระทง" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3501/3501140.png'">
-            <div class="tag-label" id="tagLabel">me</div>
         </div>
 
         <!-- โมเดลธูปเทียน -->
@@ -511,8 +513,8 @@
             </div>
         </div>
 
-        <!-- ปุ่มลอยกระทงพร้อมกัน สีขาว -->
-        <button class="floating-launch-btn" id="launchBtn" onclick="launchKrathong()">กดเพื่อลอยกระทง✨</button>
+        <!-- ปุ่มลอยกระทงสีขาว -->
+        <button class="floating-launch-btn" id="launchBtn" onclick="launchKrathong()">ลอยพร้อมกัน ✨</button>
 
         <!-- แท็บควบคุมล่างสุด -->
         <div class="bottom-panel" id="bottomPanel">
@@ -573,7 +575,6 @@
         let selectedKrathongIndex = 1;
         const photoDataList = Array(5).fill(null).map(() => ({ src: '', caption: '' }));
 
-        // ตรวจสอบข้อมูลจาก URL (หากแฟนสแกนมาดู)
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const dataParam = urlParams.get('data');
@@ -582,7 +583,6 @@
                 try {
                     const parsedData = JSON.parse(decodeURIComponent(escape(atob(dataParam))));
                     
-                    // ปรับแต่งตามข้อมูลที่ถูกส่งมาผ่าน QR Code
                     selectedKrathongIndex = parsedData.k || 1;
                     document.getElementById('krathongDisplay').src = `กระทง${selectedKrathongIndex}.png`;
                     document.getElementById('wishInput').value = parsedData.w || '';
@@ -596,7 +596,6 @@
                         });
                     }
 
-                    // ข้ามขั้นตอนการสร้าง นำธูปเทียนปักบนกระทงและเริ่มลอยทันที
                     document.getElementById('bottomPanel').style.display = 'none';
                     const mainKrathong = document.getElementById('mainKrathong');
                     const dragEl = document.getElementById('draggableSticks');
@@ -606,10 +605,8 @@
                     dragEl.style.left = '50%';
                     dragEl.style.transform = 'translateX(-50%)';
 
-                    document.getElementById('tagLabel').style.display = 'inline-block';
                     mainKrathong.classList.add('floating');
 
-                    // เล่นเพลง
                     const audio = document.getElementById('bgMusic');
                     audio.play().catch(e => console.log(e));
 
@@ -619,7 +616,6 @@
             }
         });
 
-        // 1. ท้องฟ้า
         const sky = document.getElementById('sky');
         for (let i = 0; i < 10; i++) {
             const lantern = document.createElement('div');
@@ -640,7 +636,6 @@
             sky.appendChild(fw);
         }
 
-        // 2. แม่น้ำ
         const river = document.getElementById('river');
         for (let i = 0; i < 6; i++) {
             const bgKrathong = document.createElement('div');
@@ -662,7 +657,6 @@
             river.appendChild(bgKrathong);
         }
 
-        // 3. เลือกกระทง 9 แบบ
         const selector = document.getElementById('selector');
         for (let i = 1; i <= 9; i++) {
             const card = document.createElement('div');
@@ -681,7 +675,6 @@
             document.getElementById('krathongDisplay').src = `กระทง${index}.png`;
         }
 
-        // 4. อัปโหลดรูป 5 รูป
         const photosInputList = document.getElementById('photosInputList');
         for (let i = 0; i < 5; i++) {
             const row = document.createElement('div');
@@ -698,7 +691,6 @@
         function uploadPhoto(event, index) {
             const file = event.target.files[0];
             if (file) {
-                // บีบอัดไฟล์ภาพขนาดเล็กเพื่อให้ยัดใส่ QR Code ได้
                 const img = new Image();
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -726,7 +718,6 @@
             document.getElementById('step3Content').style.display = step === 3 ? 'block' : 'none';
         }
 
-        // 5. พิมพ์คำอธิษฐานเสร็จสิ้น
         function finishWish() {
             document.getElementById('bottomPanel').style.transform = 'translateY(150%)';
             document.getElementById('draggableSticks').style.display = 'flex';
@@ -734,7 +725,6 @@
             initDragSticks();
         }
 
-        // 6. ลากธูปเทียน
         function initDragSticks() {
             const dragEl = document.getElementById('draggableSticks');
             let isDragging = false;
@@ -781,13 +771,10 @@
             document.addEventListener('mouseup', endDrag);
         }
 
-        // 7. กดปุ่มลอยพร้อมกัน -> แสดง QR Code ให้แฟนสแกน
         function launchKrathong() {
             document.getElementById('launchBtn').style.display = 'none';
-            document.getElementById('tagLabel').style.display = 'inline-block';
             document.getElementById('mainKrathong').classList.add('floating');
 
-            // เจนข้อมูลกระทงแปลงเป็น Code
             const krathongData = {
                 k: selectedKrathongIndex,
                 w: document.getElementById('wishInput').value,
@@ -797,17 +784,15 @@
             const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(krathongData))));
             const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
 
-            // เคลียร์ QR Code เก่า
-            document.getElementById('qrcode').innerHTML = '';
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
             
-            // สร้าง QR Code ใหม่
-            new QRCode(document.getElementById('qrcode'), {
+            new QRCode(qrContainer, {
                 text: shareUrl,
                 width: 160,
                 height: 160
             });
 
-            // แสดงหน้าต่าง QR Code
             const modal = document.getElementById('qrModal');
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('show'), 10);
@@ -819,7 +804,6 @@
             setTimeout(() => modal.style.display = 'none', 400);
         }
 
-        // 8. แสดงคำอธิษฐานเมื่อกดกระทง
         function openMemoryModal() {
             if (document.getElementById('mainKrathong').classList.contains('floating')) {
                 const wish = document.getElementById('wishInput').value;
@@ -870,7 +854,6 @@
             setTimeout(() => overlay.style.display = 'none', 600);
         }
 
-        // 9. ป๊อปอัปขยายภาพเต็มจอ
         function openFullPhoto(data) {
             const imgSrc = data.src || 'https://via.placeholder.com/300/ffb6c1/ffffff?text=Love';
             const capText = data.caption || 'ความทรงจำของเรา';
