@@ -217,6 +217,31 @@
             animation: pulseText 1.5s infinite;
         }
 
+        /* ป้ายบอกให้ลองแตะที่กระทง (สำหรับแฟน) */
+        .tap-hint-banner {
+            position: absolute;
+            bottom: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            color: #d81b60;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            white-space: nowrap;
+            z-index: 45;
+            display: none;
+            animation: pulseBanner 1.5s infinite;
+        }
+
+        @keyframes pulseBanner {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.06); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
         @keyframes pulseText {
             0% { opacity: 0.7; }
             50% { opacity: 1; }
@@ -480,6 +505,7 @@
 </head>
 <body>
 
+    <!-- เพลงบรรเลงวนซ้ำอัตโนมัติ (Loop) -->
     <audio id="bgMusic" src="song.mp3" loop></audio>
 
     <div class="mobile-frame" id="frame">
@@ -492,6 +518,9 @@
         </div>
 
         <div class="drag-hint-fixed" id="dragHint" style="display: none;">✨ แตะลากธูปเทียนไปปักลงกระทง</div>
+        
+        <!-- ข้อความแนะนำให้ลองแตะที่กระทง (สำหรับแฟน) -->
+        <div class="tap-hint-banner" id="tapHintBanner">✨ ลองแตะที่กระทงดูสิ</div>
 
         <!-- กระทงหลัก -->
         <div class="main-krathong-wrapper" id="mainKrathong" onclick="openMemoryModal()">
@@ -575,7 +604,72 @@
         let selectedKrathongIndex = 1;
         const photoDataList = Array(5).fill(null).map(() => ({ src: '', caption: '' }));
 
-        // ระบบฐานข้อมูล IndexedDB สำหรับเก็บไฟล์ภาพทุกนามสกุล ขนาดเต็ม 100% ไม่บีบอัด
+        // เล่นเพลงทันทีที่เปิดเว็บ (พยายาม Bypass Autoplay Policy ของเบราว์เซอร์)
+        window.addEventListener('DOMContentLoaded', async () => {
+            const audio = document.getElementById('bgMusic');
+            audio.volume = 1.0;
+            
+            // ฟังก์ชันสั่งเล่นเพลง
+            const playAudio = () => {
+                audio.play().catch(err => {
+                    console.log("Autoplay blocked, waiting for user interaction:", err);
+                });
+            };
+
+            playAudio();
+            // เผื่อกรณีเบราว์เซอร์บล็อก ให้เล่นทันทีที่มีการแตะหน้าจอครั้งแรก
+            document.body.addEventListener('click', () => {
+                if (audio.paused) playAudio();
+            }, { once: true });
+
+            // ตรวจสอบว่าเปิดผ่าน QR Code หรือไม่ (ฝั่งแฟน)
+            const urlParams = new URLSearchParams(window.location.search);
+            const kid = urlParams.get('kid');
+            
+            if (kid) {
+                try {
+                    const savedData = await getFromDB(kid);
+                    if (savedData) {
+                        selectedKrathongIndex = savedData.k || 1;
+                        document.getElementById('krathongDisplay').src = `กระทง${selectedKrathongIndex}.png`;
+                        document.getElementById('wishInput').value = savedData.w || '';
+                        
+                        if (savedData.p && Array.isArray(savedData.p)) {
+                            savedData.p.forEach((item, idx) => {
+                                if (photoDataList[idx]) {
+                                    photoDataList[idx].src = item.s || '';
+                                    photoDataList[idx].caption = item.c || '';
+                                }
+                            });
+                        }
+                    } else {
+                        document.getElementById('krathongDisplay').src = `กระทง1.png`;
+                    }
+
+                    // ซ่อนเมนูสร้าง ปักธูปเทียนอัตโนมัติ และแสดงกระทงลอย
+                    document.getElementById('bottomPanel').style.display = 'none';
+                    const mainKrathong = document.getElementById('mainKrathong');
+                    const dragEl = document.getElementById('draggableSticks');
+                    mainKrathong.appendChild(dragEl);
+                    dragEl.style.display = 'flex';
+                    dragEl.style.top = '28px';
+                    dragEl.style.left = '50%';
+                    dragEl.style.transform = 'translateX(-50%)';
+
+                    mainKrathong.classList.add('floating');
+
+                    // แสดงข้อความแนะนำให้ลองแตะที่กระทง (เฉพาะฝั่งแฟน)
+                    document.getElementById('tapHintBanner').style.display = 'block';
+
+                } catch (e) {
+                    console.error("Load DB failed", e);
+                }
+            } else {
+                document.getElementById('krathongDisplay').src = `กระทง1.png`;
+            }
+        });
+
+        // ระบบฐานข้อมูล IndexedDB
         const dbName = "KrathongLoveDB";
         const storeName = "krathongStore";
 
@@ -614,53 +708,6 @@
                 request.onerror = () => reject(request.error);
             });
         }
-
-        // โหลดข้อมูลเมื่อเปิดจาก QR Code ของแฟน
-        window.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const kid = urlParams.get('kid');
-            
-            if (kid) {
-                try {
-                    const savedData = await getFromDB(kid);
-                    if (savedData) {
-                        selectedKrathongIndex = savedData.k || 1;
-                        document.getElementById('krathongDisplay').src = `กระทง${selectedKrathongIndex}.png`;
-                        document.getElementById('wishInput').value = savedData.w || '';
-                        
-                        if (savedData.p && Array.isArray(savedData.p)) {
-                            savedData.p.forEach((item, idx) => {
-                                if (photoDataList[idx]) {
-                                    photoDataList[idx].src = item.s || '';
-                                    photoDataList[idx].caption = item.c || '';
-                                }
-                            });
-                        }
-                    } else {
-                        document.getElementById('krathongDisplay').src = `กระทง1.png`;
-                    }
-
-                    document.getElementById('bottomPanel').style.display = 'none';
-                    const mainKrathong = document.getElementById('mainKrathong');
-                    const dragEl = document.getElementById('draggableSticks');
-                    mainKrathong.appendChild(dragEl);
-                    dragEl.style.display = 'flex';
-                    dragEl.style.top = '28px';
-                    dragEl.style.left = '50%';
-                    dragEl.style.transform = 'translateX(-50%)';
-
-                    mainKrathong.classList.add('floating');
-
-                    const audio = document.getElementById('bgMusic');
-                    audio.play().catch(e => console.log(e));
-
-                } catch (e) {
-                    console.error("Load DB failed", e);
-                }
-            } else {
-                document.getElementById('krathongDisplay').src = `กระทง1.png`;
-            }
-        });
 
         const sky = document.getElementById('sky');
         for (let i = 0; i < 10; i++) {
@@ -734,7 +781,6 @@
             photosInputList.appendChild(row);
         }
 
-        // รองรับไฟล์รูปภาพทุกประเภท ความละเอียดเดิม 100% ไม่บีบอัด ไม่แตก
         function uploadPhoto(event, index) {
             const file = event.target.files[0];
             if (file) {
@@ -794,9 +840,6 @@
 
                 document.getElementById('dragHint').style.display = 'none';
                 document.getElementById('launchBtn').style.display = 'block';
-
-                const audio = document.getElementById('bgMusic');
-                audio.play().catch(e => console.log(e));
             }
 
             dragEl.addEventListener('touchstart', startDrag);
@@ -812,24 +855,19 @@
             document.getElementById('launchBtn').style.display = 'none';
             document.getElementById('mainKrathong').classList.add('floating');
 
-            // สร้างรหัสประจำตัวกระทงแบบสุ่มไม่ซ้ำกัน
             const kid = 'k_' + Math.random().toString(36).substring(2, 9);
-
             const krathongData = {
                 k: selectedKrathongIndex,
                 w: document.getElementById('wishInput').value,
                 p: photoDataList.map(item => ({ s: item.src, c: item.caption }))
             };
 
-            // บันทึกข้อมูลลงในระบบฐานข้อมูลเบราว์เซอร์
             await saveToDB(kid, krathongData);
-
             const shareUrl = `${window.location.origin}${window.location.pathname}?kid=${kid}`;
 
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = '';
             
-            // สร้าง QR Code จากลิงก์สั้นๆ (รหัส ID) ทำให้ QR Code ขึ้นชัวร์ 100% สแกนง่ายมาก
             new QRCode(qrContainer, {
                 text: shareUrl,
                 width: 170,
@@ -852,6 +890,9 @@
 
         function openMemoryModal() {
             if (document.getElementById('mainKrathong').classList.contains('floating')) {
+                // ซ่อนป้ายแนะนำเมื่อแฟนเริ่มกดดูแล้ว
+                document.getElementById('tapHintBanner').style.display = 'none';
+
                 const wish = document.getElementById('wishInput').value;
                 document.getElementById('displayWishText').innerText = wish.trim() !== "" ? `“ ${wish} ”` : "“ ขอให้เรามีความสุข รักกันนานๆ ❤️ ”";
                 
