@@ -215,7 +215,6 @@
             box-shadow: 0 3px 10px rgba(255, 20, 147, 0.3);
         }
 
-        /* ปุ่ม QR Code & ปุ่มลอยพร้อมกัน */
         .floating-launch-btn {
             position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%);
             background: #ffffff; color: #d81b60; border: 2px solid #ff69b4;
@@ -223,7 +222,6 @@
             cursor: pointer; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); z-index: 60; display: none;
         }
 
-        /* ป๊อปอัป QR Code ให้แฟนสแกน */
         .qr-modal {
             position: absolute; inset: 0; background: rgba(0,0,0,0.8);
             backdrop-filter: blur(8px); z-index: 200; display: none;
@@ -234,7 +232,6 @@
             background: #fff; padding: 20px; border-radius: 16px; text-align: center; color: #333;
         }
 
-        /* หน้าจอแสดงรูปคำอธิษฐาน */
         .memory-overlay {
             position: absolute; inset: 0; background-image: url('พื้นหลัง.png');
             background-size: cover; background-position: center; backdrop-filter: blur(12px);
@@ -313,15 +310,13 @@
 
         <!-- พื้นที่กระทงคู่รัก -->
         <div class="krathongs-holder" id="krathongsHolder">
-            <!-- กระทงฝั่งเรา -->
             <div class="single-krathong" id="myKrathongBox" onclick="openMemoryModal('me')">
                 <img id="krathongDisplay" class="krathong-img" src="กระทง1.png" alt="กระทงเรา" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3501/3501140.png'">
-                <div class="tag-label">me</div>
+                <div class="tag-label" id="myTagLabel">me</div>
             </div>
-            <!-- กระทงฝั่งแฟน (จะแสดงเมื่อแฟนเข้าร่วม) -->
             <div class="single-krathong" id="partnerKrathongBox" style="display: none;" onclick="openMemoryModal('partner')">
                 <img id="partnerKrathongDisplay" class="krathong-img" src="กระทง1.png" alt="กระทงแฟน">
-                <div class="tag-label">you</div>
+                <div class="tag-label" id="partnerTagLabel">you</div>
             </div>
         </div>
 
@@ -337,8 +332,7 @@
             </div>
         </div>
 
-        <!-- ปุ่มแชร์ QR ให้แฟน / ปุ่มกดลอย -->
-        <button class="floating-launch-btn" id="qrBtn" style="display: none;" onclick="showQRModal()">📲 ส่ง QR ให้แฟนสแกนสร้างกระทงคู่</button>
+        <button class="floating-launch-btn" id="qrBtn" style="display: none;" onclick="showQRModal()">📲 แสดง QR Code ห้อง love001</button>
         <button class="floating-launch-btn" id="launchBtn" style="display: none;" onclick="launchKrathong()">ลอยพร้อมกัน ✨</button>
 
         <!-- แท็บควบคุม -->
@@ -367,9 +361,9 @@
         <!-- QR Code Modal -->
         <div class="qr-modal" id="qrModal">
             <div class="qr-box">
-                <h3 style="font-size: 14px; margin-bottom: 10px;">ส่ง QR Code นี้ให้แฟนสแกน 💕</h3>
-                <div id="qrcode" style="display: flex; justify-content: center; margin-bottom: 10px;"></div>
-                <p style="font-size: 11px; color: #666; margin-bottom: 12px;">เพื่อให้แฟนมาเลือกกระทงและใส่รูปของเขาเอง</p>
+                <h3 style="font-size: 14px; margin-bottom: 6px;">ห้อง: love001 💕</h3>
+                <p style="font-size: 11px; color: #666; margin-bottom: 10px;">ส่ง QR Code นี้ให้แฟนสแกนเข้าห้องได้เลย</p>
+                <div id="qrcode" style="display: flex; justify-content: center; margin-bottom: 12px;"></div>
                 <button class="btn-primary" onclick="closeQRModal()">ตกลง (รอแฟนเข้า)</button>
             </div>
         </div>
@@ -394,28 +388,28 @@
     </div>
 
     <script>
-        // --- 1. การตั้งค่า Firebase (เชื่อมต่อระบบเรียลไทม์) ---
+        // 1. ตั้งค่า Firebase เชื่อมห้อง 'love001' เสมอ
         const firebaseConfig = {
-            databaseURL: "https://loikrathong-couple-default-rtdb.firebaseio.com" // ฐานข้อมูลสาธารณะฟรีสำหรับคู่รัก
+            databaseURL: "https://loikrathong-couple-default-rtdb.firebaseio.com"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // ตรวจสอบห้อง (Room ID) จาก URL
+        // ล็อกชื่อห้องเป็น love001
+        const roomId = 'love001';
+        
+        // แยก Role ฝั่งแรกเป็น me ฝั่งสแกนมาทีหลังเป็น partner
         const urlParams = new URLSearchParams(window.location.search);
-        let roomId = urlParams.get('room');
-        let myRole = 'me'; // 'me' คือคนสร้างห้อง, 'partner' คือแฟนที่สแกนเข้ามา
+        let myRole = urlParams.get('role') || 'me';
 
-        if (!roomId) {
-            roomId = 'room_' + Math.random().toString(36).substr(2, 6);
-            window.history.replaceState(null, null, `?room=${roomId}`);
-        } else {
-            myRole = 'partner';
+        // ปรับแต่งป้ายชื่อให้ตรงบทบาท
+        if (myRole === 'partner') {
+            document.getElementById('myTagLabel').innerText = 'you';
+            document.getElementById('partnerTagLabel').innerText = 'me';
         }
 
         const roomRef = db.ref('rooms/' + roomId);
 
-        // ข้อมูลส่วนตัวของเรา
         const myData = {
             krathong: 1,
             wish: '',
@@ -424,7 +418,7 @@
 
         let partnerData = null;
 
-        // ฟังการอัปเดตข้อมูลจากคู่รักแบบเรียลไทม์
+        // ดึงข้อมูลฝั่งคู่รักทันทีที่เปิดเข้าห้อง love001
         roomRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -437,7 +431,7 @@
             }
         });
 
-        // 2. ตกแต่งฉากแม่น้ำและโคมลอย
+        // 2. ท้องฟ้าและกระแสน้ำ
         const sky = document.getElementById('sky');
         for (let i = 0; i < 10; i++) {
             const lantern = document.createElement('div');
@@ -547,7 +541,7 @@
                 dragEl.style.top = '20px'; dragEl.style.left = '50%'; dragEl.style.transform = 'translateX(-50%)';
                 document.getElementById('dragHint').style.display = 'none';
 
-                // บันทึกข้อมูลของเราขึ้นคลาวด์
+                // บันทึกข้อมูลขึ้นห้อง love001
                 roomRef.child(myRole).set(myData);
 
                 if (myRole === 'me') {
@@ -563,12 +557,17 @@
             dragEl.addEventListener('mousedown', startDrag); document.addEventListener('mousemove', moveDrag); document.addEventListener('mouseup', endDrag);
         }
 
-        // 6. ระบบ QR Code
+        // 6. QR Code สำหรับแฟนเข้าห้อง love001
         function showQRModal() {
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = '';
+            
+            // สร้างลิงก์ที่จะให้แฟนกดเข้าในฐานะ partner
+            const baseUrl = window.location.href.split('?')[0];
+            const partnerUrl = `${baseUrl}?room=love001&role=partner`;
+
             new QRCode(qrContainer, {
-                text: window.location.href,
+                text: partnerUrl,
                 width: 140, height: 140
             });
             document.getElementById('qrModal').style.display = 'flex';
@@ -582,7 +581,7 @@
             document.getElementById('krathongsHolder').classList.add('floating');
         }
 
-        // 8. เปิดดูความทรงจำของ 'me' หรือ 'partner'
+        // 8. แสดงความทรงจำ
         function openMemoryModal(targetRole) {
             if (!document.getElementById('krathongsHolder').classList.contains('floating')) return;
 
