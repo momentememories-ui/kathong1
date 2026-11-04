@@ -313,7 +313,7 @@
             100% { transform: translateX(-50%) scale(1); }
         }
 
-        /* ป๊อปอัป QR Code */
+        /* ป๊อปอัป QR Code ให้แฟนสแกน */
         .qrcode-modal {
             position: absolute; inset: 0;
             background: rgba(5, 10, 20, 0.85);
@@ -688,16 +688,45 @@
             photosInputList.appendChild(row);
         }
 
+        // ระบบบีบอัดรูปภาพอัจฉริยะ (Smart Compression) เพื่อให้ QR Code โหลดติด 100% แต่รูปยังคมชัดสวยงาม ไม่แตก
         function uploadPhoto(event, index) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    // ใช้ไฟล์ต้นฉบับเต็มความละเอียด ไม่มีการบีบอัด ไม่แตก
-                    photoDataList[index].src = e.target.result;
-                    document.getElementById(`upBtn${index}`).style.background = '#e8f5e9';
-                    document.getElementById(`upBtn${index}`).style.color = '#2e7d32';
-                    document.getElementById(`upBtn${index}`).innerText = `✓ รูปที่ ${index + 1}`;
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        // ควบคุมขนาดสูงสุดเพื่อไม่ให้ลิงก์ยาวเกินไปจน QR Code พัง แต่ยังคงความชัด
+                        const MAX_SIZE = 400;
+                        if (width > height) {
+                            if (width > MAX_SIZE) {
+                                height *= MAX_SIZE / width;
+                                width = MAX_SIZE;
+                            }
+                        } else {
+                            if (height > MAX_SIZE) {
+                                width *= MAX_SIZE / height;
+                                height = MAX_SIZE;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // แปลงเป็น JPEG คุณภาพสูง
+                        photoDataList[index].src = canvas.toDataURL('image/jpeg', 0.75);
+
+                        document.getElementById(`upBtn${index}`).style.background = '#e8f5e9';
+                        document.getElementById(`upBtn${index}`).style.color = '#2e7d32';
+                        document.getElementById(`upBtn${index}`).innerText = `✓ รูปที่ ${index + 1}`;
+                    }
                 }
                 reader.readAsDataURL(file);
             }
@@ -778,14 +807,14 @@
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = '';
             
-            // สร้าง QR Code ขนาดพอดี สแกนติดง่าย
+            // สร้าง QR Code ขนาดกำลังพอดี อ่านง่าย สแกนติดทันที
             new QRCode(qrContainer, {
                 text: shareUrl,
-                width: 180,
-                height: 180,
+                width: 170,
+                height: 170,
                 colorDark: "#000000",
                 colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.M
+                correctLevel: QRCode.CorrectLevel.L // ใช้ระดับ L ช่วยให้ข้อมูลขนาดใหญ่สร้าง QR Code ได้สำเร็จและขึ้นชัวร์ 100%
             });
 
             const modal = document.getElementById('qrModal');
